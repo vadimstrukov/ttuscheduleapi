@@ -25,7 +25,7 @@ public class ScheduleController {
 
     @RequestMapping(method=RequestMethod.GET)
     public @ResponseBody
-    String Test(@RequestParam(value="group", required=true) String group) throws IOException {
+    String getSchedule(@RequestParam(value="group", required=true) String group) throws IOException {
         Map<String, Integer> map = new HashMap<>();
         System.setProperty("https.protocols", "TLSv1,SSLv3,SSLv2Hello");
         Document document = Jsoup.connect("https://ois.ttu.ee/portal/page?_pageid=35,435155&_dad=portal&_schema=PORTAL&i=2&e=-1&e_sem=161&a=1&b=1&c=-1&d=-1&k=&q=neto&g=").timeout(10000).get();//b=1 - stats, b=2 kaug
