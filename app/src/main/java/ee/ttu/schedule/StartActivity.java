@@ -1,27 +1,26 @@
-package com.vadimstrukov.ttuschedule;
+package ee.ttu.schedule;
 
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
-
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.octo.android.robospice.request.simple.SimpleTextRequest;
-import com.vadimstrukov.ttuschedule.service.DatabaseHandler;
-import com.vadimstrukov.ttuschedule.utils.ParseICSUtil;
+import com.vadimstrukov.ttuschedule.R;
 
+import ee.ttu.schedule.service.DatabaseHandler;
+import ee.ttu.schedule.utils.ParseICSUtil;
 import net.fortuna.ical4j.data.ParserException;
-
 import java.io.IOException;
 import java.text.ParseException;
 
 
 public class StartActivity extends BaseScheduleActivity {
 
-    private static final String Url = "http://10.2.105.129:8080/schedule?group=";
+    private static final String Url = "http://192.168.11.24:8080/schedule?group=";
     private SimpleTextRequest txtRequest;
 
     @Override

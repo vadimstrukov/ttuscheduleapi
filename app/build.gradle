@@ -45,5 +45,6 @@ dependencies {
     compile 'commons-lang:commons-lang:2.6'
     compile 'com.android.support:design:23.0.1'
     compile 'com.octo.android.robospice:robospice:1.4.14'
+    compile 'me.zhanghai.android.materialprogressbar:library:1.1.4'
     compile project(':WeekViewLib')
 }

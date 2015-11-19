@@ -1,4 +1,4 @@
-package com.vadimstrukov.ttuschedule;
+package ee.ttu.schedule;
 
 
 import android.graphics.Color;
@@ -14,8 +14,10 @@ import android.view.MenuItem;
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
-import com.vadimstrukov.ttuschedule.model.Subject;
-import com.vadimstrukov.ttuschedule.service.DatabaseHandler;
+import com.vadimstrukov.ttuschedule.R;
+
+import ee.ttu.schedule.model.Subject;
+import ee.ttu.schedule.service.DatabaseHandler;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

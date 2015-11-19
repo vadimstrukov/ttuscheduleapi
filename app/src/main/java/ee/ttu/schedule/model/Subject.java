@@ -1,4 +1,4 @@
-package com.vadimstrukov.ttuschedule.model;
+package ee.ttu.schedule.model;
 
 import java.util.Date;
 

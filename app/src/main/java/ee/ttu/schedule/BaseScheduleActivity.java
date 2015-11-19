@@ -1,9 +1,9 @@
-package com.vadimstrukov.ttuschedule;
+package ee.ttu.schedule;
 
 import android.support.v7.app.AppCompatActivity;
 
 import com.octo.android.robospice.SpiceManager;
-import com.vadimstrukov.ttuschedule.service.ScheduleService;
+import ee.ttu.schedule.service.ScheduleService;
 
 /**
  * Created by vadimstrukov on 11/17/15.

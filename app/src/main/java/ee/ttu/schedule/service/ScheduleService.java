@@ -1,4 +1,4 @@
-package com.vadimstrukov.ttuschedule.service;
+package ee.ttu.schedule.service;
 
 import android.app.Application;
 

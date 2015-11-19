@@ -1,11 +1,11 @@
-package com.vadimstrukov.ttuschedule.utils;
+package ee.ttu.schedule.utils;
 
 
 import android.content.Context;
 
 
-import com.vadimstrukov.ttuschedule.model.Subject;
-import com.vadimstrukov.ttuschedule.service.DatabaseHandler;
+import ee.ttu.schedule.model.Subject;
+import ee.ttu.schedule.service.DatabaseHandler;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
@@ -13,12 +13,8 @@ import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Property;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
