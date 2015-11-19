@@ -3,6 +3,7 @@ package com.vadimstrukov.ttuschedule;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
@@ -26,9 +27,10 @@ public class StartActivity extends BaseScheduleActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.loading_activity);
+        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
         String group = getIntent().getStringExtra("group");
         txtRequest = new SimpleTextRequest(Url + group);
-
     }
     @Override
     protected void onStart() {
