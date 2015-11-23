@@ -1,11 +1,10 @@
-package rest;
+package rest.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -22,7 +21,6 @@ import java.util.regex.Pattern;
 @RequestMapping("/schedule")
 public class ScheduleController {
 
-
     @RequestMapping(method=RequestMethod.GET)
     public @ResponseBody
     String getSchedule(@RequestParam(value="group", required=true) String group) throws IOException {
@@ -30,7 +28,6 @@ public class ScheduleController {
         System.setProperty("https.protocols", "TLSv1,SSLv3,SSLv2Hello");
         Document document = Jsoup.connect("https://ois.ttu.ee/portal/page?_pageid=35,435155&_dad=portal&_schema=PORTAL&i=2&e=-1&e_sem=161&a=1&b=1&c=-1&d=-1&k=&q=neto&g=").timeout(10000).get();//b=1 - stats, b=2 kaug
         Elements spans = document.select("span").select("span:has(a)");
-
         for (int i = 0; i < spans.size(); i++) {
             Pattern p = Pattern.compile("g=(\\w+)");
             Matcher m = p.matcher(spans.get(i).attr("onclick"));
@@ -43,5 +40,4 @@ public class ScheduleController {
         InputStream in = urlConnection.getInputStream();
         return org.apache.commons.io.IOUtils.toString(in);
     }
-
 }
