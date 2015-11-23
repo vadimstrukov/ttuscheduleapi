@@ -47,6 +47,7 @@ public class StartActivity extends BaseScheduleActivity {
 
         @Override
         public void onRequestSuccess(final String result) {
+
             Toast.makeText(StartActivity.this, "success", Toast.LENGTH_SHORT).show();
             DatabaseHandler handler = new DatabaseHandler(StartActivity.this);
             try {

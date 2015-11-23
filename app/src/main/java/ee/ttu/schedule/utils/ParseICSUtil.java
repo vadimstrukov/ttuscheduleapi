@@ -29,11 +29,8 @@ public class ParseICSUtil {
     public void getData(String calenderString, Context context) throws IOException, ParseException, ParserException {
 
         StringReader sin = new StringReader(calenderString);
-
         CalendarBuilder builder = new CalendarBuilder();
-
         Calendar calendar = builder.build(sin);
-
         List<Component> components = calendar.getComponents(Component.VEVENT);
 
         DatabaseHandler handler = new DatabaseHandler(context);

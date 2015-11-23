@@ -1,6 +1,9 @@
 package ee.ttu.schedule;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -54,6 +57,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
     private void startActivity(Class<?> cls, String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         Intent intent = new Intent(MainActivity.this, cls);
@@ -78,7 +88,12 @@ public class MainActivity extends AppCompatActivity {
             inputLayoutGroup.setError(getString(R.string.err_msg_group));
             requestFocus(edittext);
             return false;
-        } else {
+        } else if(!isOnline()){
+            inputLayoutGroup.setError(getString(R.string.err_network));
+            requestFocus(edittext);
+            return false;
+        }
+        else {
             inputLayoutGroup.setErrorEnabled(false);
         }
 

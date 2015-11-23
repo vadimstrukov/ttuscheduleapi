@@ -9,5 +9,6 @@
     <string name="hint_group">Enter your group:</string>
     <string name="btn_submit">Get schedule!</string>
     <string name="err_msg_group">Group missing! Enter group!</string>
+    <string name="err_network">Network connection missing!</string>
     <string name="loading_text">Loading, please be patient…</string>
 </resources>
