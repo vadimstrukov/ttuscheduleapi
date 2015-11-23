@@ -20,7 +20,7 @@ import java.text.ParseException;
 
 public class StartActivity extends BaseScheduleActivity {
 
-    private static final String Url = "http://192.168.11.24:8080/schedule?group=";
+    private static final String Url = "http://10.2.105.129:8088/schedule?group=";
     private SimpleTextRequest txtRequest;
 
     @Override
@@ -52,16 +52,12 @@ public class StartActivity extends BaseScheduleActivity {
             try {
                 if(handler.getAllSubjects().isEmpty()) {
                     ParseICSUtil parseICSUtil = new ParseICSUtil();
-                    try {
-                        parseICSUtil.getData(result, StartActivity.this);
-                    } catch (IOException | ParseException | ParserException e) {
-                        e.printStackTrace();
-                    }
+                    parseICSUtil.getData(result, StartActivity.this);
                     Intent intent = new Intent(StartActivity.this, ScheduleActivity.class);
                     startActivity(intent);
                     finish();
                 }
-            } catch (ParseException e) {
+            } catch (IOException | ParseException | ParserException e) {
                 e.printStackTrace();
             }
         }
