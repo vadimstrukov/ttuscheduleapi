@@ -77,7 +77,7 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>2.1.1</version>
+                        <version>2.6</version>
                         <configuration>
                             <outputDirectory>webapps</outputDirectory>
                             <warName>ROOT</warName>
