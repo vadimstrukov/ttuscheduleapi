@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -38,6 +39,6 @@ public class ScheduleController {
         URL uri = new URL(url);
         URLConnection urlConnection = uri.openConnection();
         InputStream in = urlConnection.getInputStream();
-        return org.apache.commons.io.IOUtils.toString(in);
+        return org.apache.commons.io.IOUtils.toString(in, StandardCharsets.UTF_8);
     }
 }
