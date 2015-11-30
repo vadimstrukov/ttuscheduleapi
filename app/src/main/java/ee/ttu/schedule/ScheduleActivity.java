@@ -45,16 +45,16 @@ public class ScheduleActivity extends AppCompatActivity implements WeekView.Mont
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ttu_schedule_ic);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                recreate();
-            }
-        });
-
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                recreate();
+//            }
+//        });
 
         DatabaseHandler handler = new DatabaseHandler(this);
         try {
