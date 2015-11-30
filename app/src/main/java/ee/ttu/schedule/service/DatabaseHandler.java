@@ -69,7 +69,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_LOCATION, subject.getLocation());
         values.put(KEY_SUMMARY, subject.getSummary());
 
-
         db.insert(TABLE_SCHEDULE, null, values);
         db.close();
     }
@@ -79,7 +78,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Set<Subject> subjectList = new LinkedHashSet<>();
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULE;
-
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         SimpleDateFormat sdf = new SimpleDateFormat("EE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);

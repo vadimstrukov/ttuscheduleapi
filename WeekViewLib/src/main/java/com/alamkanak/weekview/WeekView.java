@@ -698,7 +698,6 @@ public class WeekView extends View {
             mFetchedMonths[1] = day.get(Calendar.MONTH)+1;
         }
 
-
         // Prepare to calculate positions of each events.
         ArrayList<EventRect> tempEvents = new ArrayList<EventRect>(mEventRects);
         mEventRects = new ArrayList<EventRect>();

@@ -7,20 +7,27 @@ configurations {
 
 
 android {
+    signingConfigs {
+        APK {
+            keyAlias 'TTUScheduleKey'
+            keyPassword '3553678'
+            storeFile file('/home/vadimstrukov/ttuschedule.jks')
+            storePassword '3553678'
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
-
     packagingOptions {
         // prevent duplicate files
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
 
         //!!! andoird buildToolsVersion 19.0.3 does not support exclude with wildcards yet :-(
-        exclude('org/apache/commons/codec/language/bm/*.txt')		//  124 files (uncompressed 215kb) with unused language specific rules
+        exclude('org/apache/commons/codec/language/bm/*.txt')
+        //  124 files (uncompressed 215kb) with unused language specific rules
     }
-
     defaultConfig {
-        applicationId "com.vadimstrukov.ttuschedule"
+        applicationId "ee.ttu.schedule"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
@@ -37,13 +44,13 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.0.1'
-    compile 'com.android.support:design:23.0.1'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
     compile 'org.mnode.ical4j:ical4j:1.0.5'
     compile 'backport-util-concurrent:backport-util-concurrent:3.1'
     compile 'commons-codec:commons-codec:1.8'
     compile 'commons-lang:commons-lang:2.6'
-    compile 'com.android.support:design:23.0.1'
+    compile 'com.android.support:design:23.1.1'
     compile 'com.octo.android.robospice:robospice:1.4.14'
     compile 'me.zhanghai.android.materialprogressbar:library:1.1.4'
     compile project(':WeekViewLib')

@@ -11,6 +11,8 @@ public class WeekViewEvent {
     private Calendar mStartTime;
     private Calendar mEndTime;
     private String mName;
+    private String mDescr;
+    private String mLocation;
     private int mColor;
 
     public WeekViewEvent(){
@@ -59,13 +61,21 @@ public class WeekViewEvent {
      * @param startTime The time when the event starts.
      * @param endTime The time when the event ends.
      */
-    public WeekViewEvent(long id, String name, Calendar startTime, Calendar endTime) {
+    public WeekViewEvent(long id, String name, String descr, String location, Calendar startTime, Calendar endTime) {
+        this.mId = id;
+        this.mName = name;
+        this.mDescr = descr;
+        this.mLocation = location;
+        this.mStartTime = startTime;
+        this.mEndTime = endTime;
+    }
+
+    public WeekViewEvent(long id, String name, Calendar startTime, Calendar endTime){
         this.mId = id;
         this.mName = name;
         this.mStartTime = startTime;
         this.mEndTime = endTime;
     }
-
 
     public Calendar getStartTime() {
         return mStartTime;
@@ -105,5 +115,21 @@ public class WeekViewEvent {
 
     public void setId(long id) {
         this.mId = id;
+    }
+
+    public String getDescr() {
+        return mDescr;
+    }
+
+    public void setDescr(String mDescr) {
+        this.mDescr = mDescr;
+    }
+
+    public String getLocation() {
+        return mLocation;
+    }
+
+    public void setLocation(String mLocation) {
+        this.mLocation = mLocation;
     }
 }

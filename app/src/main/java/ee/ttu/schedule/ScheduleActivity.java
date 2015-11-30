@@ -1,10 +1,12 @@
 package ee.ttu.schedule;
 
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -139,7 +141,20 @@ public class ScheduleActivity extends AppCompatActivity implements WeekView.Mont
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-
+        AlertDialog alertDialog = new AlertDialog.Builder(ScheduleActivity.this).create();
+        alertDialog.setTitle(event.getName());
+        String dateStart = String.valueOf(event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(event.getStartTime().get(Calendar.MINUTE));
+        String dateEnd = String.valueOf(event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(event.getEndTime().get(Calendar.MINUTE));
+        String descr = event.getDescr();
+        String location = event.getLocation();
+        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + descr + "\n" + location);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
 
     @Override
@@ -162,7 +177,7 @@ public class ScheduleActivity extends AppCompatActivity implements WeekView.Mont
                 startTime.setTime(subject.getDateStart());
                 endTime.setTime(subject.getDateEnd());
 
-                WeekViewEvent event = new WeekViewEvent(subjectIndex, subject.getSummary(), startTime, endTime);
+                WeekViewEvent event = new WeekViewEvent(subjectIndex, subject.getSummary(), subject.getDescr(), subject.getLocation(), startTime, endTime);
                 event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
                 events.add(event);
             }
