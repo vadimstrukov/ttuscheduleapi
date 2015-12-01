@@ -12,7 +12,7 @@ import com.octo.android.robospice.request.simple.SimpleTextRequest;
 import com.vadimstrukov.ttuschedule.R;
 
 import ee.ttu.schedule.service.DatabaseHandler;
-import ee.ttu.schedule.utils.Constans;
+import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.ParseICSUtil;
 import net.fortuna.ical4j.data.ParserException;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class StartActivity extends BaseScheduleActivity {
         setContentView(R.layout.loading_activity);
         findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
         String group = getIntent().getStringExtra("group");
-        request = new SimpleTextRequest(Constans.URL + group);
+        request = new SimpleTextRequest(Constants.URL + group);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class StartActivity extends BaseScheduleActivity {
                 if(handler.getAllSubjects().isEmpty()) {
                     ParseICSUtil parseICSUtil = new ParseICSUtil();
                     parseICSUtil.getData(result, StartActivity.this);
-                    Intent intent = new Intent(StartActivity.this, ScheduleActivity.class);
+                    Intent intent = new Intent(StartActivity.this, DrawerActivity.class);
                     startActivity(intent);
                     finish();
                 }

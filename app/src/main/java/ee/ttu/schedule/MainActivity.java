@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
             } else {
-                startActivity(ScheduleActivity.class, "Welcome!");
+                startActivity(DrawerActivity.class, "Welcome!");
             }
         } catch (ParseException e) {
             e.printStackTrace();

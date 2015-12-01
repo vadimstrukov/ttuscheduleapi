@@ -1,25 +1,25 @@
-package ee.ttu.schedule;
-
+package ee.ttu.schedule.fragment;
 
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
-import android.view.View;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.vadimstrukov.ttuschedule.R;
 
-import ee.ttu.schedule.model.Subject;
-import ee.ttu.schedule.service.DatabaseHandler;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,82 +30,51 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-public class ScheduleActivity extends AppCompatActivity implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
+import ee.ttu.schedule.model.Subject;
+import ee.ttu.schedule.service.DatabaseHandler;
+
+/**
+ * Created by vadimstrukov on 12/1/15.
+ */
+public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
 
     public static Set<Subject> subjects;
     private String[] colorArray;
-
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ttu_schedule_ic);
-        setSupportActionBar(toolbar);
+        setHasOptionsMenu(true);
+        getAllSubjects();
+    }
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                recreate();
-//            }
-//        });
-
-        DatabaseHandler handler = new DatabaseHandler(this);
-        try {
-            subjects = handler.getAllSubjects();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        colorArray = getApplicationContext().getResources().getStringArray(R.array.colors);
-        mWeekView = (WeekView) findViewById(R.id.weekView);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.content_main, container, false);
+        mWeekView = (WeekView) rootView.findViewById(R.id.weekView);
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
         mWeekView.goToHour(8);
         setupDateTimeInterpreter(false);
-
-    }
-
-
-    private void setupDateTimeInterpreter(final boolean shortDate) {
-        mWeekView.setDateTimeInterpreter(new DateTimeInterpreter() {
-            @Override
-            public String interpretDate(Calendar date) {
-                SimpleDateFormat weekdayNameFormat = new SimpleDateFormat("EEE", Locale.getDefault());
-                String weekday = weekdayNameFormat.format(date.getTime());
-                SimpleDateFormat format = new SimpleDateFormat(" M/d", Locale.getDefault());
-
-                if (shortDate)
-                    weekday = String.valueOf(weekday.charAt(0));
-                return weekday.toUpperCase() + format.format(date.getTime());
-            }
-
-            @Override
-            public String interpretTime(int hour) {
-                return hour + ":00";
-            }
-        });
+        return rootView;
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         setupDateTimeInterpreter(id == R.id.action_three_day_view);
-        switch (id){
+        switch (id) {
             case R.id.action_today:
                 mWeekView.goToToday();
                 mWeekView.goToHour(8);
@@ -135,13 +104,12 @@ public class ScheduleActivity extends AppCompatActivity implements WeekView.Mont
                 }
                 return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-        AlertDialog alertDialog = new AlertDialog.Builder(ScheduleActivity.this).create();
+        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
         alertDialog.setTitle(event.getName());
         String dateStart = String.valueOf(event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(event.getStartTime().get(Calendar.MINUTE));
         String dateEnd = String.valueOf(event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(event.getEndTime().get(Calendar.MINUTE));
@@ -183,5 +151,35 @@ public class ScheduleActivity extends AppCompatActivity implements WeekView.Mont
             }
         }
         return events;
+    }
+
+    private void getAllSubjects(){
+        DatabaseHandler handler = new DatabaseHandler(getActivity());
+        try {
+            subjects = handler.getAllSubjects();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        colorArray = getActivity().getApplicationContext().getResources().getStringArray(R.array.colors);
+    }
+
+    private void setupDateTimeInterpreter(final boolean shortDate) {
+        mWeekView.setDateTimeInterpreter(new DateTimeInterpreter() {
+            @Override
+            public String interpretDate(Calendar date) {
+                SimpleDateFormat weekdayNameFormat = new SimpleDateFormat("EEE", Locale.getDefault());
+                String weekday = weekdayNameFormat.format(date.getTime());
+                SimpleDateFormat format = new SimpleDateFormat(" M/d", Locale.getDefault());
+
+                if (shortDate)
+                    weekday = String.valueOf(weekday.charAt(0));
+                return weekday.toUpperCase() + format.format(date.getTime());
+            }
+
+            @Override
+            public String interpretTime(int hour) {
+                return hour + ":00";
+            }
+        });
     }
 }
