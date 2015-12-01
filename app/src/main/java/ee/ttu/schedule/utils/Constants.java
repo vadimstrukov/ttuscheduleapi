@@ -5,5 +5,5 @@ package ee.ttu.schedule.utils;
  */
 
 public class Constants {
-    public static final String URL = "http://10.2.105.129:8088/schedule?group=";
+    public static final String URL = "http://dev.pkk.ee:8080/ttuapi/schedule?group=";
 }
