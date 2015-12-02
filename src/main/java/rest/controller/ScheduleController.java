@@ -15,9 +15,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by vadimstrukov on 11/17/15.
- */
 @Controller
 @RequestMapping("/schedule")
 public class ScheduleController {
@@ -38,7 +35,7 @@ public class ScheduleController {
         String url = String.format("https://ois.ttu.ee/pls/portal/tunniplaan.PRC_EXPORT_DATA?p_page=view_plaan&pn=i&pv=2&pn=e_sem&pv=161&pn=e&pv=-1&pn=b&pv=1&pn=g&pv=%1$d&pn=is_oppejoud&pv=false&pn=q&pv=1", map.get(group));
         URL uri = new URL(url);
         URLConnection urlConnection = uri.openConnection();
-        InputStream in = urlConnection.getInputStream();
-        return org.apache.commons.io.IOUtils.toString(in, StandardCharsets.UTF_8);
+        InputStream inputStream = urlConnection.getInputStream();
+        return org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 }
