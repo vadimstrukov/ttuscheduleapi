@@ -8,11 +8,12 @@ import org.springframework.boot.context.web.SpringBootServletInitializer;
 @SpringBootApplication
 public class ScheduleApplication extends SpringBootServletInitializer {
 
-    //Tomcat
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(ScheduleApplication.class);
+        return application.sources(applicationClass);
     }
+
+    private static Class<ScheduleApplication> applicationClass = ScheduleApplication.class;
 
     public static void main(String[] args) {
         SpringApplication.run(ScheduleApplication.class, args);
