@@ -22,11 +22,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="ttuscheduleapi" />
+        <module name="gs-actuator-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="ttuscheduleapi" target="1.8" />
+      <module name="gs-actuator-service" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>
