@@ -33,9 +33,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_group"
+                android:imeOptions="actionDone"
                 android:inputType="text" />
         </android.support.design.widget.TextInputLayout>
-
 
         <Button
             android:id="@+id/btn_get"
@@ -45,5 +45,12 @@
             android:background="@color/colorPrimary"
             android:text="@string/btn_submit"
             android:textColor="@android:color/white" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:id="@+id/fragmentContainer"/>
+
     </LinearLayout>
 </RelativeLayout>

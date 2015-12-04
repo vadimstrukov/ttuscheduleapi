@@ -37,7 +37,7 @@ public class DrawerActivity extends AppCompatActivity {
         tempFragment = new ScheduleFragment();
         updateFragment();
 
-        Drawer result = new DrawerBuilder()
+        new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withActionBarDrawerToggle(true)

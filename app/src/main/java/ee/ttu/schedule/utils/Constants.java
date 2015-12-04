@@ -5,5 +5,8 @@ package ee.ttu.schedule.utils;
  */
 
 public class Constants {
-    public static final String URL = "http://dev.pkk.ee:8080/ttuapi/schedule?group=";
+    public static final String URL = "http://schedule-ttuapi.rhcloud.com/schedule?group=";
+    public static final String PL_SQL_ERROR = "\n" +
+            "   exception: operation abortedORA-06502: PL/SQL: numeric or value error: character to number conversion error\n" +
+            "   \n";
 }

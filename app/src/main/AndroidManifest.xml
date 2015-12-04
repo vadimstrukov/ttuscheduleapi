@@ -28,10 +28,6 @@
             android:enabled="true"
             android:exported="true">
         </service>
-        <activity android:name="ee.ttu.schedule.StartActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
         <activity android:name="ee.ttu.schedule.DrawerActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" >

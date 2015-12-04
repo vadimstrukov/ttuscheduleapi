@@ -1,6 +1,10 @@
-package ee.ttu.schedule;
+package ee.ttu.schedule.fragment;
 
-import android.support.v7.app.AppCompatActivity;
+
+
+
+
+import android.app.Fragment;
 
 import com.octo.android.robospice.SpiceManager;
 import ee.ttu.schedule.service.ScheduleService;
@@ -8,17 +12,18 @@ import ee.ttu.schedule.service.ScheduleService;
 /**
  * Created by vadimstrukov on 11/17/15.
  */
-public abstract class BaseScheduleActivity extends AppCompatActivity {
+public abstract class BaseScheduleSpiceFragment extends Fragment {
     private SpiceManager spiceManager = new SpiceManager(ScheduleService.class);
 
+
     @Override
-    protected void onStart() {
-        spiceManager.start(this);
+    public void onStart() {
         super.onStart();
+        spiceManager.start(getActivity());
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         spiceManager.shouldStop();
         super.onStop();
     }

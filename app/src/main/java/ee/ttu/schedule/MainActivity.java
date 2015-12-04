@@ -1,5 +1,6 @@
 package ee.ttu.schedule;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -11,12 +12,14 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.vadimstrukov.ttuschedule.R;
 
+import ee.ttu.schedule.fragment.ConnectionFragment;
 import ee.ttu.schedule.service.DatabaseHandler;
 
 import java.text.ParseException;
@@ -25,10 +28,10 @@ import java.text.ParseException;
  * Created by vadimstrukov on 11/18/15.
  */
 public class MainActivity extends AppCompatActivity {
+
+    public static Button getschedule;
     private EditText edittext;
-    private Button getschedule;
     private TextInputLayout inputLayoutGroup;
-    private String group;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +78,21 @@ public class MainActivity extends AppCompatActivity {
         if (!validateName()) {
             return;
         }
-        Toast.makeText(getApplicationContext(), "Thank You! Schedule loading...", Toast.LENGTH_SHORT).show();
-        group = edittext.getText().toString().toUpperCase();
-        Intent intent = new Intent(MainActivity.this, StartActivity.class);
-        intent.putExtra("group", group);
-        startActivity(intent);
-        finish();
+        InputMethodManager imm=
+                (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(edittext.getWindowToken(), 0);
+
+        Toast.makeText(getApplicationContext(), "Schedule loading...", Toast.LENGTH_SHORT).show();
+        String group = edittext.getText().toString().toUpperCase();
+        Bundle data = new Bundle();
+        data.putString("group", group);
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        ConnectionFragment fragment = new ConnectionFragment();
+        fragment.setArguments(data);
+        transaction.replace(R.id.fragmentContainer, fragment);
+        transaction.commit();
     }
+
 
     private boolean validateName() {
         if (edittext.getText().toString().trim().isEmpty()) {

@@ -14,12 +14,10 @@ public class ScheduleService extends SpiceService {
     @Override
     public CacheManager createCacheManager(Application application) throws CacheCreationException {
         CacheManager cacheManager = new CacheManager();
-
         InFileStringObjectPersister inFileStringObjectPersister =
                 new InFileStringObjectPersister(application);
 
         cacheManager.addPersister(inFileStringObjectPersister);
-
         return cacheManager;
     }
 
