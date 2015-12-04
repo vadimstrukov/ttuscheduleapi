@@ -9,8 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import rest.client.TTUSchedule;
+import rest.model.Subject;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -22,7 +25,7 @@ public class ScheduleController {
 
 
     @RequestMapping
-    public ResponseEntity<Map<String, Calendar>> Schedules(@RequestParam(value="group", required=true) String[] group) throws IOException, ParserException {
+    public ResponseEntity<Map<String, List<Subject>>> Schedules(@RequestParam(value="groups", required=true) String[] group) throws IOException, ParserException, ParseException {
         return new ResponseEntity<>(ttuSchedule.getCalendars(Lists.newArrayList(group)), HttpStatus.OK);
     }
 }
