@@ -19,6 +19,8 @@ import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
 import com.vadimstrukov.ttuschedule.R;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -107,9 +109,11 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+        DecimalFormat mFormat= new DecimalFormat("00");
+        mFormat.setRoundingMode(RoundingMode.DOWN);
         alertDialog.setTitle(event.getName());
-        String dateStart = String.valueOf(event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(event.getStartTime().get(Calendar.MINUTE));
-        String dateEnd = String.valueOf(event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + String.valueOf(event.getEndTime().get(Calendar.MINUTE));
+        String dateStart = mFormat.format((double)event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" +mFormat.format((double)event.getStartTime().get(Calendar.MINUTE));
+        String dateEnd = mFormat.format((double)event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double)event.getEndTime().get(Calendar.MINUTE));
         String descr = event.getDescr();
         String location = event.getLocation();
         alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + descr + "\n" + location);
