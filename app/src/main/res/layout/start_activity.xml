@@ -27,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <EditText
+            <AutoCompleteTextView
                 android:textColor="@color/material_drawer_primary_dark"
                 android:id="@+id/input_group"
                 android:layout_width="match_parent"

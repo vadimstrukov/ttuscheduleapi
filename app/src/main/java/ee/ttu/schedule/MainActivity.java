@@ -13,39 +13,75 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.vadimstrukov.ttuschedule.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import ee.ttu.schedule.fragment.ConnectionFragment;
 import ee.ttu.schedule.service.DatabaseHandler;
+import ee.ttu.schedule.utils.Constants;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by vadimstrukov on 11/18/15.
  */
 public class MainActivity extends AppCompatActivity {
 
-    public static Button getschedule;
-    private EditText edittext;
+    public static Button getScheduleButton;
+    private AutoCompleteTextView groupField;
     private TextInputLayout inputLayoutGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final List<String> groupList = new ArrayList<>();
         DatabaseHandler handler = new DatabaseHandler(this);
+        RequestQueue queue = Volley.newRequestQueue(this);
+        JsonArrayRequest jsObjRequest = new JsonArrayRequest(Request.Method.GET, Constants.URL + "/groups",
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                groupList.add(response.get(i).toString());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }, new Response.ErrorListener() {
 
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        queue.add(jsObjRequest);
         try {
             if (handler.getAllSubjects().isEmpty()) {
                 setContentView(R.layout.start_activity);
-                edittext = (EditText) findViewById(R.id.input_group);
+                groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, groupList);
+                groupField.setAdapter(adapter);
                 inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
-                getschedule = (Button) findViewById(R.id.btn_get);
-                edittext.addTextChangedListener(new MyTextWatcher(edittext));
-                getschedule.setOnClickListener(new View.OnClickListener() {
+                getScheduleButton = (Button) findViewById(R.id.btn_get);
+                groupField.addTextChangedListener(new MyTextWatcher(groupField));
+                getScheduleButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         submitForm();
@@ -59,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
 
     private boolean isOnline() {
         ConnectivityManager cm =
@@ -78,12 +115,12 @@ public class MainActivity extends AppCompatActivity {
         if (!validateName()) {
             return;
         }
-        InputMethodManager imm=
-                (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(edittext.getWindowToken(), 0);
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(groupField.getWindowToken(), 0);
 
         Toast.makeText(getApplicationContext(), "Schedule loading...", Toast.LENGTH_SHORT).show();
-        String group = edittext.getText().toString().toUpperCase();
+        String group = groupField.getText().toString().toUpperCase();
         Bundle data = new Bundle();
         data.putString("group", group);
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -95,16 +132,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private boolean validateName() {
-        if (edittext.getText().toString().trim().isEmpty()) {
+        if (groupField.getText().toString().trim().isEmpty()) {
             inputLayoutGroup.setError(getString(R.string.err_msg_group));
-            requestFocus(edittext);
+            requestFocus(groupField);
             return false;
-        } else if(!isOnline()){
+        } else if (!isOnline()) {
             inputLayoutGroup.setError(getString(R.string.err_network));
-            requestFocus(edittext);
+            requestFocus(groupField);
             return false;
-        }
-        else {
+        } else {
             inputLayoutGroup.setErrorEnabled(false);
         }
 
