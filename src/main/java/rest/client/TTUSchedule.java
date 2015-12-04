@@ -12,15 +12,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Repository;
 import rest.model.Subject;
+import sun.util.calendar.ZoneInfo;
 
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +36,8 @@ public class TTUSchedule {
 
     public Map<String, List<Subject>> getCalendars(List<String> groups) throws IOException, ParserException, ParseException {
         Map<String, List<Subject>> calendarMap = Maps.newHashMap();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         for (String group : groups){
             URL url = new URL(String.format(CALENDAR_URL, groupsMap.get(group.toUpperCase())));
             CalendarBuilder calendarBuilder = new CalendarBuilder();
@@ -46,8 +46,8 @@ public class TTUSchedule {
             for (Object object : components) {
                 Component component = (Component) object;
                 Subject subject = new Subject();
-                subject.setDateStart(new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH).parse(component.getProperty(Property.DTSTART).getValue()));
-                subject.setDateEnd(new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH).parse(component.getProperty(Property.DTEND).getValue()));
+                subject.setDateStart(dateFormat.parse(component.getProperty(Property.DTSTART).getValue()));
+                subject.setDateEnd(dateFormat.parse(component.getProperty(Property.DTEND).getValue()));
                 subject.setDescription(component.getProperty(Property.DESCRIPTION).getValue());
                 subject.setLocation(component.getProperty(Property.LOCATION).getValue());
                 subject.setSummary(component.getProperty(Property.SUMMARY).getValue());
