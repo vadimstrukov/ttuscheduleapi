@@ -37,7 +37,7 @@ public class TTUSchedule {
     public Map<String, List<Subject>> getCalendars(List<String> groups) throws IOException, ParserException, ParseException {
         Map<String, List<Subject>> calendarMap = Maps.newHashMap();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        dateFormat.setTimeZone(TimeZone.getTimeZone("EET"));
         for (String group : groups){
             URL url = new URL(String.format(CALENDAR_URL, groupsMap.get(group.toUpperCase())));
             CalendarBuilder calendarBuilder = new CalendarBuilder();
@@ -66,7 +66,7 @@ public class TTUSchedule {
         Map<String, Integer> map = Maps.newLinkedHashMap();
         Pattern pattern = Pattern.compile("g=(\\w+)");
         for (int i = 1; i <= 2; i++) {
-            for (Element span : Jsoup.connect(String.format(GROUPS_URL, i)).timeout(10000).get().select("span").select("span:has(a)")) {
+            for (Element span : Jsoup.connect(String.format(GROUPS_URL, i)).timeout(15000).get().select("span").select("span:has(a)")) {
                 Matcher matcher = pattern.matcher(span.attr("onclick"));
                 if (matcher.find())
                     map.put(span.select("a").html(), Integer.valueOf(matcher.group(1)));
