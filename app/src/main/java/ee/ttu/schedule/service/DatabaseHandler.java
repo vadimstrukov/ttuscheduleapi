@@ -10,15 +10,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import ee.ttu.schedule.model.Subject;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Set;
 
 
-/**
- * Created by vadimstrukov on 10/13/15.
- */
 public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
@@ -44,8 +39,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String CREATE_SCHEDULE_TABLE = "CREATE TABLE "
                 + TABLE_SCHEDULE + "("
                 + KEY_ID + " INTEGER PRIMARY KEY, "
-                + KEY_DT_START + " TEXT, "
-                + KEY_DT_END + " TEXT, "
+                + KEY_DT_START + " INTEGER, "
+                + KEY_DT_END + " INTEGER, "
                 + KEY_DESCR + " TEXT, "
                 + KEY_LOCATION + " TEXT, "
                 + KEY_SUMMARY + " TEXT);";
@@ -65,7 +60,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_DT_START, String.valueOf(subject.getDateStart()));
         values.put(KEY_DT_END, String.valueOf(subject.getDateEnd()));
-        values.put(KEY_DESCR, subject.getDescr());
+        values.put(KEY_DESCR, subject.getDescription());
         values.put(KEY_LOCATION, subject.getLocation());
         values.put(KEY_SUMMARY, subject.getSummary());
 
@@ -80,14 +75,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String selectQuery = "SELECT  * FROM " + TABLE_SCHEDULE;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        SimpleDateFormat sdf = new SimpleDateFormat("EE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
         if (cursor.moveToFirst()) {
             do {
                 Subject subject = new Subject();
                 subject.setID(Integer.parseInt(cursor.getString(0)));
-                subject.setDateStart(sdf.parse(cursor.getString(1)));
-                subject.setDateEnd(sdf.parse(cursor.getString(2)));
-                subject.setDescr(cursor.getString(3));
+                subject.setDateStart(cursor.getLong(1));
+                subject.setDateEnd(cursor.getLong(2));
+                subject.setDescription(cursor.getString(3));
                 subject.setLocation(cursor.getString(4));
                 subject.setSummary(cursor.getString(5));
 

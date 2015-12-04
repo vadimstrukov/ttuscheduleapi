@@ -1,16 +1,13 @@
 package ee.ttu.schedule.model;
 
-import java.util.Date;
+import java.io.Serializable;
 
-/**
- * Created by vadimstrukov on 9/30/15.
- */
-public class Subject {
+public class Subject implements Serializable {
 
     private int ID;
-    private Date dateStart;
-    private Date dateEnd;
-    private String descr;
+    private Long dateStart;
+    private Long dateEnd;
+    private String description;
     private String location;
     private String summary;
 
@@ -22,28 +19,28 @@ public class Subject {
         this.ID = ID;
     }
 
-    public Date getDateStart() {
+    public Long getDateStart() {
         return dateStart;
     }
 
-    public void setDateStart(Date dateStart) {
+    public void setDateStart(Long dateStart) {
         this.dateStart = dateStart;
     }
 
-    public Date getDateEnd() {
+    public Long getDateEnd() {
         return dateEnd;
     }
 
-    public void setDateEnd(Date dateEnd) {
+    public void setDateEnd(Long dateEnd) {
         this.dateEnd = dateEnd;
     }
 
-    public String getDescr() {
-        return descr;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescr(String descr) {
-        this.descr = descr;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getLocation() {

@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
@@ -23,6 +22,7 @@ import com.vadimstrukov.ttuschedule.R;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,9 +33,6 @@ import java.util.Set;
 import ee.ttu.schedule.model.Subject;
 import ee.ttu.schedule.service.DatabaseHandler;
 
-/**
- * Created by vadimstrukov on 12/1/15.
- */
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
 
     public static Set<Subject> subjects;
@@ -142,10 +139,11 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                 Calendar startTime = GregorianCalendar.getInstance();
                 Calendar endTime = GregorianCalendar.getInstance();
 
-                startTime.setTime(subject.getDateStart());
-                endTime.setTime(subject.getDateEnd());
+                startTime.setTime(new Date(subject.getDateStart()));
+                endTime.setTime(new Date(subject.getDateEnd()));
 
-                WeekViewEvent event = new WeekViewEvent(subjectIndex, subject.getSummary(), subject.getDescr(), subject.getLocation(), startTime, endTime);
+
+                WeekViewEvent event = new WeekViewEvent(subjectIndex, subject.getSummary(), subject.getDescription(), subject.getLocation(), startTime, endTime);
                 event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
                 events.add(event);
             }
