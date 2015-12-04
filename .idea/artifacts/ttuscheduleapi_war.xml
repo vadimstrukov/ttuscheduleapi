@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="ttuscheduleapi:war">
-    <output-path>$PROJECT_DIR$/target</output-path>
-    <root id="archive" name="ttuscheduleapi-0.1.0.war">
-      <element id="artifact" artifact-name="ttuscheduleapi:war exploded" />
-    </root>
-  </artifact>
-</component>
