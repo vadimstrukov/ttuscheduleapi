@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,17 +23,17 @@ public class TTUSchedule {
     private static final String CALENDAR_URL = "https://ois.ttu.ee/pls/portal/tunniplaan.PRC_EXPORT_DATA?p_page=view_plaan&pn=i&pv=2&pn=e_sem&pv=161&pn=e&pv=-1&pn=b&pv=1&pn=g&pv=%1$d&pn=is_oppejoud&pv=false&pn=q&pv=1";
 
     private List<Calendar> calendars;
-    private Map<String, Integer> groupMap;
+    private Map<String, Integer> groupsMap;
 
     public TTUSchedule() throws IOException {
         System.setProperty("https.protocols", "TLSv1,SSLv3,SSLv2Hello");
         calendars = Lists.newLinkedList();
-        groupMap = getAllGroupsId();
+        groupsMap = getGroupsMap();
     }
 
     public void sync(List<String> groups) throws IOException, ParserException {
         for (String group : groups){
-            URL url = new URL(String.format(CALENDAR_URL, groupMap.get(group)));
+            URL url = new URL(String.format(CALENDAR_URL, groupsMap.get(group)));
             CalendarBuilder calendarBuilder = new CalendarBuilder();
             calendars.add(calendarBuilder.build(url.openConnection().getInputStream()));
         }
@@ -42,7 +43,11 @@ public class TTUSchedule {
         return calendars;
     }
 
-    private Map<String, Integer> getAllGroupsId() throws IOException {
+    public Set<String> getAllGroups(){
+        return groupsMap.keySet();
+    }
+
+    private Map<String, Integer> getGroupsMap() throws IOException {
         Map<String, Integer> map = Maps.newLinkedHashMap();
         Pattern pattern = Pattern.compile("g=(\\w+)");
         for (int i = 1; i <= 2; i++) {

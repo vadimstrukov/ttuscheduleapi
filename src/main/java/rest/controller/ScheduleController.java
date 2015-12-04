@@ -1,4 +1,4 @@
-package rest;
+package rest.controller;
 
 import com.google.common.collect.Lists;
 import net.fortuna.ical4j.data.ParserException;
@@ -18,11 +18,12 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Controller
-@RequestMapping("/schedule")
+@RequestMapping("/groups")
 public class ScheduleController {
 
     @Autowired
@@ -34,5 +35,4 @@ public class ScheduleController {
         ttuSchedule.sync(Lists.newArrayList(group));
         return ttuSchedule.getCalendars();
     }
-
 }
