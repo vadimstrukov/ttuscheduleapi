@@ -20,31 +20,15 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 
-/**
- * Created by vadimstrukov on 9/30/15.
- */
 @SuppressWarnings("unchecked")
 public class ParseICSUtil {
 
-    public void getData(String calenderString, Context context) throws IOException, ParseException, ParserException {
-
-        StringReader sin = new StringReader(calenderString);
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar calendar = builder.build(sin);
-        List<Component> components = calendar.getComponents(Component.VEVENT);
+    public void getData(List<Subject> subjects, Context context) throws IOException, ParseException, ParserException {
 
         DatabaseHandler handler = new DatabaseHandler(context);
 
-        for (Component component : components) {
-
-            Subject subject = new Subject();
-            subject.setDateStart(new SimpleDateFormat("yyyyMMdd'T'HHmmss").parse(component.getProperty(Property.DTSTART).getValue()));
-            subject.setDateEnd(new SimpleDateFormat("yyyyMMdd'T'HHmmss").parse(component.getProperty(Property.DTEND).getValue()));
-            subject.setDescr(component.getProperty(Property.DESCRIPTION).getValue());
-            subject.setLocation(component.getProperty(Property.LOCATION).getValue());
-            subject.setSummary(component.getProperty(Property.SUMMARY).getValue());
+        for (Subject subject:subjects) {
             handler.addContact(subject);
         }
-
     }
 }
