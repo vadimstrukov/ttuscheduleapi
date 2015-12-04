@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ttuscheduleapi</groupId>
+    <groupId>ee.ttu.schedule</groupId>
     <artifactId>ttuscheduleapi</artifactId>
-    <version>0.1.0</version>
-    <packaging>war</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -41,7 +41,10 @@
     </dependencies>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <start-class>rest.ScheduleApplication</start-class>
         <java.version>1.7</java.version>
+        <tomcat.version>8.0.9</tomcat.version>
     </properties>
 
     <build>
@@ -52,22 +55,4 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>openshift</id>
-            <build>
-                <finalName>ttuscheduleapi</finalName>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <version>2.1.1</version>
-                        <configuration>
-                            <outputDirectory>webapps</outputDirectory>
-                            <warName>ROOT</warName>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
