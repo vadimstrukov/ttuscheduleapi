@@ -18,6 +18,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -45,8 +46,8 @@ public class TTUSchedule {
             for (Object object : components) {
                 Component component = (Component) object;
                 Subject subject = new Subject();
-                subject.setDateStart(new SimpleDateFormat("yyyyMMdd'T'HHmmss").parse(component.getProperty(Property.DTSTART).getValue()));
-                subject.setDateEnd(new SimpleDateFormat("yyyyMMdd'T'HHmmss").parse(component.getProperty(Property.DTEND).getValue()));
+                subject.setDateStart(new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH).parse(component.getProperty(Property.DTSTART).getValue()));
+                subject.setDateEnd(new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH).parse(component.getProperty(Property.DTEND).getValue()));
                 subject.setDescription(component.getProperty(Property.DESCRIPTION).getValue());
                 subject.setLocation(component.getProperty(Property.LOCATION).getValue());
                 subject.setSummary(component.getProperty(Property.SUMMARY).getValue());
