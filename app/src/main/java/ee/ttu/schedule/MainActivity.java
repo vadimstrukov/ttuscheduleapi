@@ -99,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 getScheduleButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        loading_panel.setVisibility(View.VISIBLE);
                         submitForm();
                     }
                 });
@@ -131,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         if (!validateName()) {
             return;
         }
+        loading_panel.setVisibility(View.VISIBLE);
         InputMethodManager imm =
                 (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(groupField.getWindowToken(), 0);
