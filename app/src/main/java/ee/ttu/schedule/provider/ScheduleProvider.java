@@ -37,7 +37,7 @@ public class ScheduleProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
-        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        final SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
         switch (uriMatcher.match(uri)){
             case ROUTE_EVENTS:
                 builder.setTables(EventContract.Event.TABLE_NAME);
@@ -81,7 +81,22 @@ public class ScheduleProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        final SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int result;
+        switch (uriMatcher.match(uri)){
+            case ROUTE_EVENTS:
+                result = db.delete(EventContract.Event.TABLE_NAME, selection, selectionArgs);
+                break;
+            case ROUTE_GROUPS:
+                result = db.delete(GroupContract.Group.TABLE_NAME, selection, selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uri " + uri);
+        }
+        Context context = getContext();
+        assert context != null;
+        getContext().getContentResolver().notifyChange(uri, null, false);
+        return result;
     }
 
     @Override

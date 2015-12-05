@@ -63,6 +63,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
         try {
             if(response.has("events")){
                 Event[] events = gson.fromJson(response.getJSONArray("events").toString(), Event[].class);
+                providerClient.delete(EventContract.Event.CONTENT_URI, null, null);
                 for(Event event : events) {
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(EventContract.EventColumns.KEY_DT_START, event.getDateStart());
@@ -75,6 +76,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
             }
             else if(response.has("groups")){
                 String[] groups = gson.fromJson(response.getJSONArray("groups").toString(), String[].class);
+                providerClient.delete(GroupContract.Group.CONTENT_URI, null, null);
                 for(String group_name : groups){
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(GroupContract.Group.KEY_NAME, group_name);
