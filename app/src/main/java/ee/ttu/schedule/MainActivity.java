@@ -18,33 +18,43 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.vadimstrukov.ttuschedule.R;
+
+import net.fortuna.ical4j.data.ParserException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import ee.ttu.schedule.fragment.ConnectionFragment;
+import ee.ttu.schedule.model.Subject;
 import ee.ttu.schedule.service.DatabaseHandler;
 import ee.ttu.schedule.utils.Constants;
+import ee.ttu.schedule.utils.ParseICSUtil;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by vadimstrukov on 11/18/15.
  */
 public class MainActivity extends AppCompatActivity {
 
-    public static Button getScheduleButton;
+    private Button getScheduleButton;
     private AutoCompleteTextView groupField;
     private TextInputLayout inputLayoutGroup;
+    private String group;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             if (handler.getAllSubjects().isEmpty()) {
                 setContentView(R.layout.start_activity);
                 groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, groupList);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, groupList);
                 groupField.setAdapter(adapter);
                 inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
                 getScheduleButton = (Button) findViewById(R.id.btn_get);
@@ -120,14 +130,44 @@ public class MainActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(groupField.getWindowToken(), 0);
 
         Toast.makeText(getApplicationContext(), "Schedule loading...", Toast.LENGTH_SHORT).show();
-        String group = groupField.getText().toString().toUpperCase();
-        Bundle data = new Bundle();
-        data.putString("group", group);
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        ConnectionFragment fragment = new ConnectionFragment();
-        fragment.setArguments(data);
-        transaction.replace(R.id.fragmentContainer, fragment);
-        transaction.commit();
+        group = groupField.getText().toString().toUpperCase();
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String request = Constants.URL + "/schedule?groups=" + group;
+        JsonArrayRequest jsRequest = new JsonArrayRequest(Request.Method.GET, request,
+
+
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), new TypeToken<Map<String, List<Subject>>>(){}.getType());
+                        DatabaseHandler handler = new DatabaseHandler(MainActivity.this);
+                        try {
+                            if (handler.getAllSubjects().isEmpty()) {
+                                ParseICSUtil parseICSUtil = new ParseICSUtil();
+                                parseICSUtil.getData(subjectMap.get(group), MainActivity.this);
+                                Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        } catch (IOException | ParseException | ParserException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(MainActivity.this, "Failure!", Toast.LENGTH_SHORT).show();
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("groups", "RDIR51");
+                return params;
+            }
+        };
+        queue.add(jsRequest);
     }
 
 
