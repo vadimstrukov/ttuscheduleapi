@@ -1,5 +1,6 @@
 package ee.ttu.schedule;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -9,7 +10,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.AttributeSet;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -30,27 +30,21 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.vadimstrukov.ttuschedule.R;
 
-import net.fortuna.ical4j.data.ParserException;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import ee.ttu.schedule.model.Subject;
+import ee.ttu.schedule.provider.EventContract;
 import ee.ttu.schedule.service.DatabaseHandler;
 import ee.ttu.schedule.utils.Constants;
-import ee.ttu.schedule.utils.ParseICSUtil;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by vadimstrukov on 11/18/15.
- */
 public class MainActivity extends AppCompatActivity {
 
     private Button getScheduleButton;
@@ -145,21 +139,22 @@ public class MainActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), new TypeToken<Map<String, List<Subject>>>() {
-                        }.getType());
-                        DatabaseHandler handler = new DatabaseHandler(MainActivity.this);
-                        try {
-                            if (handler.getAllSubjects().isEmpty()) {
-                                ParseICSUtil parseICSUtil = new ParseICSUtil();
-                                parseICSUtil.getData(subjectMap.get(group), MainActivity.this);
-                                Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
-                                loading_panel.setVisibility(View.INVISIBLE);
-                                startActivity(intent);
-                                finish();
-                            }
-                        } catch (IOException | ParseException | ParserException e) {
-                            e.printStackTrace();
+                        TypeToken typeToken = new TypeToken<Map<String, List<Subject>>>() {
+                        };
+                        Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), typeToken.getType());
+                        for(Subject subject : subjectMap.get(group)) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(EventContract.EventColumns.KEY_DT_START, subject.getDateStart());
+                            contentValues.put(EventContract.EventColumns.KEY_DT_END, subject.getDateEnd());
+                            contentValues.put(EventContract.EventColumns.KEY_DESCRIPTION, subject.getDescription());
+                            contentValues.put(EventContract.EventColumns.KEY_LOCATION, subject.getLocation());
+                            contentValues.put(EventContract.EventColumns.KEY_SUMMARY, subject.getSummary());
+                            getContentResolver().insert(EventContract.Event.CONTENT_URI, contentValues);
                         }
+                        Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
+                        loading_panel.setVisibility(View.INVISIBLE);
+                        startActivity(intent);
+                        finish();
                     }
                 }, new Response.ErrorListener() {
 
