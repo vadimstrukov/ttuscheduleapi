@@ -24,6 +24,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -33,6 +34,7 @@ import net.fortuna.ical4j.data.ParserException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import ee.ttu.schedule.model.Subject;
 import ee.ttu.schedule.service.DatabaseHandler;
@@ -133,12 +135,12 @@ public class MainActivity extends AppCompatActivity {
         group = groupField.getText().toString().toUpperCase();
         RequestQueue queue = Volley.newRequestQueue(this);
         String request = Constants.URL + "/schedule?groups=" + group;
-        JsonArrayRequest jsRequest = new JsonArrayRequest(Request.Method.GET, request,
+        JsonObjectRequest jsRequest = new JsonObjectRequest(Request.Method.GET, request,
 
 
-                new Response.Listener<JSONArray>() {
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
                         Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), new TypeToken<Map<String, List<Subject>>>(){}.getType());
                         DatabaseHandler handler = new DatabaseHandler(MainActivity.this);
                         try {
