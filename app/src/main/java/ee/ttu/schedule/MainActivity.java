@@ -1,6 +1,5 @@
 package ee.ttu.schedule;
 
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -10,6 +9,7 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private AutoCompleteTextView groupField;
     private TextInputLayout inputLayoutGroup;
     private String group;
+    private View loading_panel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,9 +94,12 @@ public class MainActivity extends AppCompatActivity {
                 inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
                 getScheduleButton = (Button) findViewById(R.id.btn_get);
                 groupField.addTextChangedListener(new MyTextWatcher(groupField));
+                loading_panel = findViewById(R.id.loadingPanel);
+                loading_panel.setVisibility(View.INVISIBLE);
                 getScheduleButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        loading_panel.setVisibility(View.VISIBLE);
                         submitForm();
                     }
                 });
@@ -141,13 +145,15 @@ public class MainActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), new TypeToken<Map<String, List<Subject>>>(){}.getType());
+                        Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), new TypeToken<Map<String, List<Subject>>>() {
+                        }.getType());
                         DatabaseHandler handler = new DatabaseHandler(MainActivity.this);
                         try {
                             if (handler.getAllSubjects().isEmpty()) {
                                 ParseICSUtil parseICSUtil = new ParseICSUtil();
                                 parseICSUtil.getData(subjectMap.get(group), MainActivity.this);
                                 Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
+                                loading_panel.setVisibility(View.INVISIBLE);
                                 startActivity(intent);
                                 finish();
                             }
@@ -160,8 +166,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(MainActivity.this, "Failure!", Toast.LENGTH_SHORT).show();
+                loading_panel.setVisibility(View.INVISIBLE);
+
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
