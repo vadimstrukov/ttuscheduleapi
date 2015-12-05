@@ -1,5 +1,8 @@
 package ee.ttu.schedule;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -36,7 +39,6 @@ import org.json.JSONObject;
 
 import ee.ttu.schedule.model.Subject;
 import ee.ttu.schedule.provider.EventContract;
-import ee.ttu.schedule.service.DatabaseHandler;
 import ee.ttu.schedule.utils.Constants;
 
 import java.text.ParseException;
@@ -56,8 +58,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Account account = new Account(getString(R.string.app_name), "ee.ttu.schedule");
+        AccountManager accountManager = (AccountManager) getApplicationContext().getSystemService(ACCOUNT_SERVICE);
+        if(accountManager.addAccountExplicitly(account, null, null)){
+            ContentResolver.setIsSyncable(account, "ee.ttu.schedule", 1);
+        }
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(account, "ee.ttu.schedule", bundle);
+
+
         final List<String> groupList = new ArrayList<>();
-        DatabaseHandler handler = new DatabaseHandler(this);
         RequestQueue queue = Volley.newRequestQueue(this);
         JsonArrayRequest jsObjRequest = new JsonArrayRequest(Request.Method.GET, Constants.URL + "/groups",
                 new Response.Listener<JSONArray>() {
@@ -79,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         queue.add(jsObjRequest);
-        try {
-            if (handler.getAllSubjects().isEmpty()) {
                 setContentView(R.layout.start_activity);
                 groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, groupList);
@@ -96,13 +106,6 @@ public class MainActivity extends AppCompatActivity {
                         submitForm();
                     }
                 });
-
-            } else {
-                startActivity(DrawerActivity.class, "Welcome!");
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
     }
 
 

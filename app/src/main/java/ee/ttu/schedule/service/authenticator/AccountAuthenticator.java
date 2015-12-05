@@ -1,4 +1,4 @@
-package ee.ttu.schedule.authenticator;
+package ee.ttu.schedule.service.authenticator;
 
 import android.accounts.AbstractAccountAuthenticator;
 import android.accounts.Account;
