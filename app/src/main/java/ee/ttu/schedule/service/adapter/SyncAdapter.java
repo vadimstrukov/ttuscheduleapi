@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import ee.ttu.schedule.model.Event;
 import ee.ttu.schedule.provider.EventContract;
+import ee.ttu.schedule.provider.GroupContract;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response.Listener<JSONObject>, Response.ErrorListener {
     private final String TAG = this.getClass().getSimpleName();
@@ -46,7 +47,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
         RequestQueue requestQueue = Volley.newRequestQueue(getContext());
         switch (extras.getInt(SYNC_TYPE, 0)){
             case SYNC_GROUPS:
-                JsonObjectRequest groupsRequest = new JsonObjectRequest(Request.Method.GET, String.format("%1$s/schedule?groups", URL), this, this);
+                JsonObjectRequest groupsRequest = new JsonObjectRequest(Request.Method.GET, String.format("%1$s/groups", URL), this, this);
                 requestQueue.add(groupsRequest);
                 break;
             case SYNC_EVENTS:
@@ -73,14 +74,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                 }
             }
             else if(response.has("groups")){
-
+                String[] groups = gson.fromJson(response.getJSONArray("groups").toString(), String[].class);
+                for(String group_name : groups){
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(GroupContract.Group.KEY_NAME, group_name);
+                    providerClient.insert(GroupContract.Group.CONTENT_URI, contentValues);
+                }
             }
         }
         catch (JSONException | RemoteException e) {
             e.printStackTrace();
         }
         finally {
-            broadcastIntent(200);
+            if(response.has("events"))
+                broadcastIntent(200);
         }
     }
 

@@ -16,11 +16,13 @@ public class ScheduleProvider extends ContentProvider {
     private static final String AUTHORITY = EventContract.CONTENT_AUTHORITY;
 
     private static final int ROUTE_EVENTS = 1;
+    private static final int ROUTE_GROUPS = 2;
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
         uriMatcher.addURI(AUTHORITY, "events", ROUTE_EVENTS);
+        uriMatcher.addURI(AUTHORITY, "groups", ROUTE_GROUPS);
     }
 
     private ScheduleDb dbHelper;
@@ -40,6 +42,9 @@ public class ScheduleProvider extends ContentProvider {
             case ROUTE_EVENTS:
                 builder.setTables(EventContract.Event.TABLE_NAME);
                 break;
+            case ROUTE_GROUPS:
+                builder.setTables(GroupContract.Group.TABLE_NAME);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
         }
@@ -56,15 +61,18 @@ public class ScheduleProvider extends ContentProvider {
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+        long id;
         switch (uriMatcher.match(uri)){
             case ROUTE_EVENTS:
-                long id = db.insertOrThrow(EventContract.Event.TABLE_NAME, null, values);
-                uri = Uri.parse(EventContract.Event.CONTENT_URI + "/" + id);
+                id = db.insertOrThrow(EventContract.Event.TABLE_NAME, null, values);
+                break;
+            case ROUTE_GROUPS:
+                id = db.insertOrThrow(GroupContract.Group.TABLE_NAME, null, values);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
         }
+        uri = Uri.parse(EventContract.Event.CONTENT_URI + "/" + id);
         Context context = getContext();
         assert context != null;
         getContext().getContentResolver().notifyChange(uri, null, false);
@@ -90,19 +98,24 @@ public class ScheduleProvider extends ContentProvider {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            String[] args = new String[]{
+            String[] args_event = new String[]{
                     EventContract.Event.TABLE_NAME, EventContract.EventColumns._ID, EventContract.EventColumns.KEY_DT_START,
                     EventContract.EventColumns.KEY_DT_END, EventContract.EventColumns.KEY_DESCRIPTION, EventContract.EventColumns.KEY_LOCATION,
                     EventContract.EventColumns.KEY_SUMMARY
             };
-            String sql = String.format("CREATE TABLE %1$s (%2$s INTEGER PRIMARY KEY, %3$s INTEGER, %4$s INTEGER, %5$s TEXT, %6$s TEXT, %7$s TEXT)", args);
-            db.execSQL(sql);
+            String[] args_group = new String[]{GroupContract.Group.TABLE_NAME, GroupContract.GroupColumns._ID, GroupContract.GroupColumns.KEY_NAME};
+            String sql_event = String.format("CREATE TABLE %1$s (%2$s INTEGER PRIMARY KEY, %3$s INTEGER, %4$s INTEGER, %5$s TEXT, %6$s TEXT, %7$s TEXT)", args_event);
+            String sql_group = String.format("CREATE TABLE %1$s (%2$s INTEGER PRIMARY KEY, %3$s TEXT)", args_group);
+            db.execSQL(sql_event);
+            db.execSQL(sql_group);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            if(oldVersion < newVersion)
+            if(oldVersion < newVersion){
                 db.execSQL("DROP TABLE IF EXISTS " + EventContract.Event.TABLE_NAME);
+                db.execSQL("DROP TABLE IF EXISTS " + GroupContract.Group.TABLE_NAME);
+            }
             onCreate(db);
         }
     }
