@@ -2,7 +2,7 @@ package ee.ttu.schedule.model;
 
 import java.io.Serializable;
 
-public class Subject implements Serializable {
+public class Event implements Serializable {
 
     private int ID;
     private Long dateStart;

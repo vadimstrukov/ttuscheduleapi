@@ -116,9 +116,9 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         alertDialog.setTitle(event.getName());
         String dateStart = mFormat.format((double)event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" +mFormat.format((double)event.getStartTime().get(Calendar.MINUTE));
         String dateEnd = mFormat.format((double)event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double)event.getEndTime().get(Calendar.MINUTE));
-        String descr = event.getDescr();
+        String description = event.getDescr();
         String location = event.getLocation();
-        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + descr + "\n" + location);
+        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
