@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "scheduleManager.db";
     private static final String TABLE_SCHEDULE = "schedule";
 
@@ -50,7 +50,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
-        if(oldVersion < 3) {
+        if(oldVersion < DATABASE_VERSION) {
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCHEDULE);
             onCreate(db);
         }
