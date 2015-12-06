@@ -61,8 +61,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onReceive(Context context, Intent intent) {
             NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
             if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
-                if(groupField != null && groupValidate(groupField.getText().toString()))
-                    inputLayoutGroup.setErrorEnabled(false);
+                inputLayoutGroup.setErrorEnabled(false);
+                groupValidate(groupField.getText().toString());
             }
             else
                 inputLayoutGroup.setError(getString(R.string.err_network));
@@ -130,7 +130,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void afterTextChanged(Editable s) {
-        if(groupValidate(groupField.getText().toString())){
+        groupValidate(s.toString());
+    }
+
+    private void groupValidate(String string){
+        Matcher matcher = Pattern.compile("^[A-Za-z][A-Za-z][A-Za-z][A-Za-z][0-9][0-9]").matcher(string);
+        if(matcher.matches()){
             inputLayoutGroup.setErrorEnabled(false);
         }
         else {
@@ -140,15 +145,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
-    private Boolean groupValidate(String string){
-        Matcher matcher = Pattern.compile("^[a-z][a-z][a-z][a-z][0-9][0-9]").matcher(string);
-        return matcher.matches();
-    }
-
     @Override
     public Cursor runQuery(CharSequence constraint) {
         String sql = String.format("%1$s like ?", GroupContract.GroupColumns.KEY_NAME);
         String[] sqlArgs = new String[]{"%" + String.valueOf(constraint).toUpperCase() + "%"};
+        groupField.performValidation();
         return getContentResolver().query(GroupContract.Group.CONTENT_URI, null, sql, sqlArgs, null);
     }
 
