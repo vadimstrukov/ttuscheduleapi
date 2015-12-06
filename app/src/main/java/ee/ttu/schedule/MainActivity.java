@@ -11,8 +11,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -30,7 +28,7 @@ import ee.ttu.schedule.provider.GroupContract;
 import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, TextWatcher, FilterQueryProvider, SimpleCursorAdapter.CursorToStringConverter {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, FilterQueryProvider, SimpleCursorAdapter.CursorToStringConverter {
 
     private Button getScheduleButton;
     private AutoCompleteTextView groupField;
@@ -44,30 +42,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            switch (intent.getIntExtra(Constants.SYNC_STATUS, -1)){
+            switch (intent.getIntExtra(Constants.SYNC_STATUS, -1)) {
                 case Constants.SYNC_STATUS_OK:
                     intent = new Intent(MainActivity.this, DrawerActivity.class);
                     startActivity(intent);
                     finish();
+                    getScheduleButton.setVisibility(View.INVISIBLE);
                 case Constants.SYNC_STATUS_FAILED:
-                    if(loading_panel != null){
+                    if (loading_panel != null) {
                         loading_panel.setVisibility(View.INVISIBLE);
                         getScheduleButton.setVisibility(View.VISIBLE);
                     }
                     break;
             }
-        }
-    };
-    private BroadcastReceiver networkBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-            if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
-                inputLayoutGroup.setErrorEnabled(false);
-                groupValidate(groupField.getText().toString());
-            }
-            else
-                inputLayoutGroup.setError(getString(R.string.err_network));
         }
     };
 
@@ -76,23 +63,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         syncUtils = new SyncUtils(getApplicationContext());
         String group = PreferenceManager.getDefaultSharedPreferences(this).getString("group", null);
-        if(group == null){
+        if (group == null) {
             syncUtils.syncGroups();
             setContentView(R.layout.start_activity);
             loading_panel = findViewById(R.id.loadingPanel);
             groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
             cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
-                    new String[]{GroupContract.GroupColumns.KEY_NAME},new int[]{android.R.id.text1}, 0);
+                    new String[]{GroupContract.GroupColumns.KEY_NAME}, new int[]{android.R.id.text1}, 0);
             cursorAdapter.setFilterQueryProvider(this);
             cursorAdapter.setCursorToStringConverter(this);
             groupField.setAdapter(cursorAdapter);
-            groupField.addTextChangedListener(this);
             inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
             getScheduleButton = (Button) findViewById(R.id.btn_get);
             getScheduleButton.setOnClickListener(this);
             loading_panel.setVisibility(View.INVISIBLE);
-        }
-        else {
+        } else {
             Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
             startActivity(intent);
             finish();
@@ -103,49 +88,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         registerReceiver(broadcastReceiver, new IntentFilter(Constants.SYNCHRONIZATION_ACTION));
-        registerReceiver(networkBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(broadcastReceiver);
-        unregisterReceiver(networkBroadcastReceiver);
     }
 
     @Override
     public void onClick(View v) {
-        getScheduleButton.setVisibility(View.INVISIBLE);
-        loading_panel.setVisibility(View.VISIBLE);
-        syncUtils.syncEvents(groupField.getText().toString());
-        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
-    }
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-        groupValidate(s.toString());
-    }
-
-    private void groupValidate(String string){
-        Matcher matcher = Pattern.compile("^[A-Za-z][A-Za-z][A-Za-z][A-Za-z][0-9][0-9]").matcher(string);
-        if(matcher.matches()){
+        if (groupValidate(groupField.getText().toString())) {
             inputLayoutGroup.setErrorEnabled(false);
+            getScheduleButton.setVisibility(View.INVISIBLE);
+            loading_panel.setVisibility(View.VISIBLE);
+            syncUtils.syncEvents(groupField.getText().toString());
+            ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
         }
-        else {
-            if (!inputLayoutGroup.isErrorEnabled())
-                inputLayoutGroup.setError(getString(R.string.err_msg_group));
+    }
+
+
+    private boolean groupValidate(String string) {
+        NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        Matcher matcher = Pattern.compile("^[A-Za-z][A-Za-z][A-Za-z][A-Za-z][0-9][0-9]").matcher(string);
+        if (!matcher.matches()) {
+            inputLayoutGroup.setError(getString(R.string.err_msg_group));
+            return false;
+        } else if (networkInfo == null) {
+            inputLayoutGroup.setError(getString(R.string.err_network));
+            return false;
         }
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        return true;
     }
 
     @Override
