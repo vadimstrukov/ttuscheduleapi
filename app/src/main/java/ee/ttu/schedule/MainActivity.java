@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         syncUtils = new SyncUtils(getApplicationContext());
         String group = PreferenceManager.getDefaultSharedPreferences(this).getString("group", null);
         if (group == null) {
