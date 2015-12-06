@@ -75,16 +75,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        account = new Account(getString(R.string.app_name), "ee.ttu.schedule");
-        accountManager = (AccountManager) getApplicationContext().getSystemService(ACCOUNT_SERVICE);
         Bundle bundle = new Bundle();
-        if (accountManager.addAccountExplicitly(account, null, null)) {
-            ContentResolver.setIsSyncable(account, "ee.ttu.schedule", 1);
-        }
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putInt(SyncAdapter.SYNC_TYPE, SyncAdapter.SYNC_GROUPS);
-        ContentResolver.requestSync(account, "ee.ttu.schedule", bundle);
+        sync(bundle);
 
         setContentView(R.layout.start_activity);
         groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
@@ -119,12 +112,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         Bundle bundle = new Bundle();
         bundle.putInt(SyncAdapter.SYNC_TYPE, SyncAdapter.SYNC_EVENTS);
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putString("group", groupField.getText().toString());
         loading_panel.setVisibility(View.VISIBLE);
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
-        ContentResolver.requestSync(account, "ee.ttu.schedule", bundle);
+        sync(bundle);
     }
 
     @Override
@@ -154,6 +145,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return matcher.matches();
     }
 
+    private void sync(Bundle bundle){
+        Bundle coreBundle = new Bundle(bundle);
+        Account account = new Account(getString(R.string.app_name), "ee.ttu.schedule");
+        AccountManager accountManager = (AccountManager) getApplicationContext().getSystemService(ACCOUNT_SERVICE);
+        if (accountManager.addAccountExplicitly(account, null, null)) {
+            ContentResolver.setIsSyncable(account, "ee.ttu.schedule", 1);
+        }
+        coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(account, "ee.ttu.schedule", bundle);
+    }
+
     @Override
     public Cursor runQuery(CharSequence constraint) {
         String sql = String.format("%1$s like ?", GroupContract.GroupColumns.KEY_NAME);
@@ -165,4 +168,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public CharSequence convertToString(Cursor cursor) {
         return cursor.getString(1);
     }
+
 }
