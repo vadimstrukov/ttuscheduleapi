@@ -60,6 +60,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         return rootView;
     }
 
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
@@ -105,13 +106,14 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
+
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-        DecimalFormat mFormat= new DecimalFormat("00");
+        DecimalFormat mFormat = new DecimalFormat("00");
         mFormat.setRoundingMode(RoundingMode.DOWN);
         alertDialog.setTitle(event.getName());
-        String dateStart = mFormat.format((double)event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" +mFormat.format((double)event.getStartTime().get(Calendar.MINUTE));
-        String dateEnd = mFormat.format((double)event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double)event.getEndTime().get(Calendar.MINUTE));
-        String description = event.getDescr();
+        String dateStart = mFormat.format((double) event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getStartTime().get(Calendar.MINUTE));
+        String dateEnd = mFormat.format((double) event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getEndTime().get(Calendar.MINUTE));
+        String description = event.getDescription();
         String location = event.getLocation();
         alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
@@ -132,24 +134,27 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         List<WeekViewEvent> events = new LinkedList<>();
         long weekIndex = 0;
-        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null,null, null, null);
+        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null, null, null, null);
         assert cursor != null;
-        if(cursor.moveToFirst()){
-            do {
-                weekIndex++;
-                Calendar startTime = GregorianCalendar.getInstance();
-                Calendar endTime = GregorianCalendar.getInstance();
-                startTime.setTime(new Date(cursor.getLong(1)));
-                endTime.setTime(new Date(cursor.getLong(2)));
-                WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5), cursor.getString(3), cursor.getString(4), startTime, endTime);
-                event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
-                events.add(event);
+        if(newMonth == Calendar.getInstance().get(Calendar.MONTH)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    weekIndex++;
+                    Calendar startTime = GregorianCalendar.getInstance();
+                    Calendar endTime = GregorianCalendar.getInstance();
+                    startTime.setTime(new Date(cursor.getLong(1)));
+                    endTime.setTime(new Date(cursor.getLong(2)));
+                    WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5), cursor.getString(3), cursor.getString(4), startTime, endTime);
+                    event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
+                    events.add(event);
+                }
+                while (cursor.moveToNext());
             }
-            while (cursor.moveToNext());
         }
         cursor.close();
         return events;
     }
+
 
     private void setupDateTimeInterpreter(final boolean shortDate) {
         mWeekView.setDateTimeInterpreter(new DateTimeInterpreter() {
