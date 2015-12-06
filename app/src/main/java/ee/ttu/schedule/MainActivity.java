@@ -1,5 +1,6 @@
 package ee.ttu.schedule;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button getScheduleButton;
     private AutoCompleteTextView groupField;
     private TextInputLayout inputLayoutGroup;
-    private View loading_panel;
+    private ProgressDialog progressDialog;
 
     private SimpleCursorAdapter cursorAdapter;
 
@@ -47,13 +48,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent = new Intent(MainActivity.this, DrawerActivity.class);
                     startActivity(intent);
                     finish();
-                    getScheduleButton.setVisibility(View.INVISIBLE);
-                case Constants.SYNC_STATUS_FAILED:
-                    if (loading_panel != null) {
-                        loading_panel.setVisibility(View.INVISIBLE);
-                        getScheduleButton.setVisibility(View.VISIBLE);
-                    }
-                    break;
+            }
+            if(getScheduleButton != null){
+                getScheduleButton.setEnabled(true);
+                progressDialog.dismiss();
             }
         }
     };
@@ -66,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (group == null) {
             syncUtils.syncGroups();
             setContentView(R.layout.start_activity);
-            loading_panel = findViewById(R.id.loadingPanel);
             groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
             cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
                     new String[]{GroupContract.GroupColumns.KEY_NAME}, new int[]{android.R.id.text1}, 0);
@@ -76,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
             getScheduleButton = (Button) findViewById(R.id.btn_get);
             getScheduleButton.setOnClickListener(this);
-            loading_panel.setVisibility(View.INVISIBLE);
         } else {
             Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
             startActivity(intent);
@@ -100,8 +96,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         if (groupValidate(groupField.getText().toString())) {
             inputLayoutGroup.setErrorEnabled(false);
-            getScheduleButton.setVisibility(View.INVISIBLE);
-            loading_panel.setVisibility(View.VISIBLE);
+            getScheduleButton.setEnabled(false);
+            progressDialog = ProgressDialog.show(this, getString(R.string.loading_title), getString(R.string.loading_message), true);
             syncUtils.syncEvents(groupField.getText().toString());
             ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
         }

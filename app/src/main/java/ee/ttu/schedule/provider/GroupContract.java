@@ -3,10 +3,7 @@ package ee.ttu.schedule.provider;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class GroupContract {
-    public static final String CONTENT_AUTHORITY = "ee.ttu.schedule";
-
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+public class GroupContract extends BaseContract {
 
     public static final String PATH_GROUPS = "groups";
 

@@ -4,11 +4,7 @@ package ee.ttu.schedule.provider;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-public class EventContract {
-    public static final String CONTENT_AUTHORITY = "ee.ttu.schedule";
-
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-
+public class EventContract extends BaseContract {
     public static final String PATH_EVENTS = "events";
 
     public interface EventColumns extends BaseColumns {
