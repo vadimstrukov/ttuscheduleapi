@@ -50,8 +50,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     startActivity(intent);
                     finish();
                 case Constants.SYNC_STATUS_FAILED:
-                    if(loading_panel != null)
+                    if(loading_panel != null){
                         loading_panel.setVisibility(View.INVISIBLE);
+                        getScheduleButton.setVisibility(View.VISIBLE);
+                    }
                     break;
             }
         }
@@ -113,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        getScheduleButton.setVisibility(View.INVISIBLE);
         loading_panel.setVisibility(View.VISIBLE);
         syncUtils.syncEvents(groupField.getText().toString());
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
