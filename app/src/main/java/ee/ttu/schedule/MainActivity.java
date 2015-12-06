@@ -1,10 +1,14 @@
 package ee.ttu.schedule;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -12,201 +16,145 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.Toast;
+import android.widget.FilterQueryProvider;
+import android.widget.SimpleCursorAdapter;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.vadimstrukov.ttuschedule.R;
 
-import net.fortuna.ical4j.data.ParserException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import ee.ttu.schedule.model.Subject;
-import ee.ttu.schedule.service.DatabaseHandler;
+import ee.ttu.schedule.provider.GroupContract;
 import ee.ttu.schedule.utils.Constants;
-import ee.ttu.schedule.utils.ParseICSUtil;
+import ee.ttu.schedule.utils.SyncUtils;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, TextWatcher, FilterQueryProvider, SimpleCursorAdapter.CursorToStringConverter {
 
     private Button getScheduleButton;
     private AutoCompleteTextView groupField;
     private TextInputLayout inputLayoutGroup;
-    private String group;
     private View loading_panel;
+
+    private SimpleCursorAdapter cursorAdapter;
+
+    private SyncUtils syncUtils;
+
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getIntExtra(Constants.SYNC_STATUS, -1)){
+                case Constants.SYNC_STATUS_OK:
+                    intent = new Intent(MainActivity.this, DrawerActivity.class);
+                    startActivity(intent);
+                    finish();
+                case Constants.SYNC_STATUS_FAILED:
+                    if(loading_panel != null)
+                        loading_panel.setVisibility(View.INVISIBLE);
+                    break;
+            }
+        }
+    };
+    private BroadcastReceiver networkBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+            if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
+                if(groupField != null && groupValidate(groupField.getText().toString()))
+                    inputLayoutGroup.setErrorEnabled(false);
+            }
+            else
+                inputLayoutGroup.setError(getString(R.string.err_network));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final List<String> groupList = new ArrayList<>();
-        DatabaseHandler handler = new DatabaseHandler(this);
-        RequestQueue queue = Volley.newRequestQueue(this);
-        JsonArrayRequest jsObjRequest = new JsonArrayRequest(Request.Method.GET, Constants.URL + "/groups",
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        for (int i = 0; i < response.length(); i++) {
-                            try {
-                                groupList.add(response.get(i).toString());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        });
-        queue.add(jsObjRequest);
-        try {
-            if (handler.getAllSubjects().isEmpty()) {
-                setContentView(R.layout.start_activity);
-                groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, groupList);
-                groupField.setAdapter(adapter);
-                inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
-                getScheduleButton = (Button) findViewById(R.id.btn_get);
-                getScheduleButton.setVisibility(View.VISIBLE);
-                groupField.addTextChangedListener(new MyTextWatcher(groupField));
-                loading_panel = findViewById(R.id.loadingPanel);
-                loading_panel.setVisibility(View.INVISIBLE);
-                getScheduleButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        submitForm();
-                    }
-                });
-
-            } else {
-                startActivity(DrawerActivity.class, "Welcome!");
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
+        syncUtils = new SyncUtils(getApplicationContext());
+        syncUtils.syncGroups();
+        String group = PreferenceManager.getDefaultSharedPreferences(this).getString("group", null);
+        if(group == null){
+            setContentView(R.layout.start_activity);
+            loading_panel = findViewById(R.id.loadingPanel);
+            groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
+            cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
+                    new String[]{GroupContract.GroupColumns.KEY_NAME},new int[]{android.R.id.text1}, 0);
+            cursorAdapter.setFilterQueryProvider(this);
+            cursorAdapter.setCursorToStringConverter(this);
+            groupField.setAdapter(cursorAdapter);
+            groupField.addTextChangedListener(this);
+            inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
+            getScheduleButton = (Button) findViewById(R.id.btn_get);
+            getScheduleButton.setOnClickListener(this);
+            loading_panel.setVisibility(View.INVISIBLE);
+        }
+        else {
+            syncUtils.syncEvents(group);
         }
     }
 
 
-    private boolean isOnline() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter(Constants.SYNCHRONIZATION_ACTION));
+        registerReceiver(networkBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
-    private void startActivity(Class<?> cls, String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        Intent intent = new Intent(MainActivity.this, cls);
-        startActivity(intent);
-        finish();
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+        unregisterReceiver(networkBroadcastReceiver);
     }
 
-    private void submitForm() {
-        if (!validateName()) {
-            return;
-        }
+    @Override
+    public void onClick(View v) {
         loading_panel.setVisibility(View.VISIBLE);
-        getScheduleButton.setVisibility(View.INVISIBLE);
-        InputMethodManager imm =
-                (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(groupField.getWindowToken(), 0);
-        group = groupField.getText().toString().toUpperCase();
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String request = Constants.URL + "/schedule?groups=" + group;
-        JsonObjectRequest jsRequest = new JsonObjectRequest(Request.Method.GET, request,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Map<String, List<Subject>> subjectMap = new GsonBuilder().create().fromJson(response.toString(), new TypeToken<Map<String, List<Subject>>>() {
-                        }.getType());
-                        DatabaseHandler handler = new DatabaseHandler(MainActivity.this);
-                        try {
-                            if (handler.getAllSubjects().isEmpty()) {
-                                ParseICSUtil parseICSUtil = new ParseICSUtil();
-                                parseICSUtil.getData(subjectMap.get(group), MainActivity.this);
-                                startActivity(DrawerActivity.class, "Welcome!");
-                                loading_panel.setVisibility(View.INVISIBLE);
-                            }
-                        } catch (IOException | ParseException | ParserException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, "Failure!", Toast.LENGTH_SHORT).show();
-                loading_panel.setVisibility(View.INVISIBLE);
-                getScheduleButton.setVisibility(View.VISIBLE);
-
-            }
-        });
-        queue.add(jsRequest);
+        syncUtils.syncEvents(groupField.getText().toString());
+        ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
     }
 
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-    private boolean validateName() {
-        if (groupField.getText().toString().trim().isEmpty()) {
-            inputLayoutGroup.setError(getString(R.string.err_msg_group));
-            requestFocus(groupField);
-            return false;
-        } else if (!isOnline()) {
-            inputLayoutGroup.setError(getString(R.string.err_network));
-            requestFocus(groupField);
-            return false;
-        } else {
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        if(groupValidate(groupField.getText().toString())){
             inputLayoutGroup.setErrorEnabled(false);
         }
-
-        return true;
+        else {
+            if (!inputLayoutGroup.isErrorEnabled())
+                inputLayoutGroup.setError(getString(R.string.err_msg_group));
+        }
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
-    private void requestFocus(View view) {
-        if (view.requestFocus()) {
-            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-        }
+    private Boolean groupValidate(String string){
+        Matcher matcher = Pattern.compile("^[a-z][a-z][a-z][a-z][0-9][0-9]").matcher(string);
+        return matcher.matches();
     }
 
-    private class MyTextWatcher implements TextWatcher {
-
-        private View view;
-
-        private MyTextWatcher(View view) {
-            this.view = view;
-        }
-
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        }
-
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        }
-
-        public void afterTextChanged(Editable editable) {
-            switch (view.getId()) {
-                case R.id.input_group:
-                    validateName();
-                    break;
-            }
-        }
+    @Override
+    public Cursor runQuery(CharSequence constraint) {
+        String sql = String.format("%1$s like ?", GroupContract.GroupColumns.KEY_NAME);
+        String[] sqlArgs = new String[]{"%" + String.valueOf(constraint).toUpperCase() + "%"};
+        return getContentResolver().query(GroupContract.Group.CONTENT_URI, null, sql, sqlArgs, null);
     }
+
+    @Override
+    public CharSequence convertToString(Cursor cursor) {
+        return cursor.getString(1);
+    }
+
 }

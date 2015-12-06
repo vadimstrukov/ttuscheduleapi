@@ -1,8 +1,8 @@
 package ee.ttu.schedule;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -20,9 +20,6 @@ import ee.ttu.schedule.fragment.AboutFragment;
 import ee.ttu.schedule.fragment.ScheduleFragment;
 import ee.ttu.schedule.fragment.UpdateScheduleFragment;
 
-/**
- * Created by vadimstrukov on 12/1/15.
- */
 public class DrawerActivity extends AppCompatActivity {
 
     private Fragment tempFragment;
@@ -84,7 +81,7 @@ public class DrawerActivity extends AppCompatActivity {
     }
     private void updateFragment(){
         if (tempFragment != null) {
-            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            final FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction.replace(R.id.flFragments, tempFragment);
             transaction.commit();
         }

@@ -1,10 +1,11 @@
 package ee.ttu.schedule.fragment;
 
+import android.app.Fragment;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -21,7 +22,6 @@ import com.vadimstrukov.ttuschedule.R;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,14 +30,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.Set;
 
-import ee.ttu.schedule.model.Subject;
-import ee.ttu.schedule.service.DatabaseHandler;
+import ee.ttu.schedule.provider.EventContract;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
 
-    public static Set<Subject> subjects;
     private String[] colorArray;
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -48,7 +45,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        getAllSubjects();
+        colorArray = getResources().getStringArray(R.array.colors);
     }
 
     @Override
@@ -114,9 +111,9 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         alertDialog.setTitle(event.getName());
         String dateStart = mFormat.format((double)event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" +mFormat.format((double)event.getStartTime().get(Calendar.MINUTE));
         String dateEnd = mFormat.format((double)event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double)event.getEndTime().get(Calendar.MINUTE));
-        String descr = event.getDescr();
+        String description = event.getDescr();
         String location = event.getLocation();
-        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + descr + "\n" + location);
+        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -134,35 +131,24 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         List<WeekViewEvent> events = new LinkedList<>();
-        long subjectIndex = 0;
-        if (subjects != null) {
-            for (Subject subject : subjects) {
-
-                subjectIndex++;
-
+        long weekIndex = 0;
+        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null,null, null, null);
+        assert cursor != null;
+        if(cursor.moveToFirst()){
+            do {
+                weekIndex++;
                 Calendar startTime = GregorianCalendar.getInstance();
                 Calendar endTime = GregorianCalendar.getInstance();
-
-                startTime.setTime(new Date(subject.getDateStart()));
-                endTime.setTime(new Date(subject.getDateEnd()));
-
-
-                WeekViewEvent event = new WeekViewEvent(subjectIndex, subject.getSummary(), subject.getDescription(), subject.getLocation(), startTime, endTime);
+                startTime.setTime(new Date(cursor.getLong(1)));
+                endTime.setTime(new Date(cursor.getLong(2)));
+                WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5), cursor.getString(3), cursor.getString(4), startTime, endTime);
                 event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
                 events.add(event);
             }
+            while (cursor.moveToNext());
         }
+        cursor.close();
         return events;
-    }
-
-    private void getAllSubjects(){
-        DatabaseHandler handler = new DatabaseHandler(getActivity());
-        try {
-            subjects = handler.getAllSubjects();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        colorArray = getActivity().getApplicationContext().getResources().getStringArray(R.array.colors);
     }
 
     private void setupDateTimeInterpreter(final boolean shortDate) {
