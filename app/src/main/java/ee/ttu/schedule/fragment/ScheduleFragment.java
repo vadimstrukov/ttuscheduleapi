@@ -1,10 +1,7 @@
 package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.RectF;
@@ -36,19 +33,17 @@ import java.util.Random;
 
 import ee.ttu.schedule.provider.EventContract;
 
-public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
 
     private String[] colorArray;
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
-    private Cursor cursor;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getLoaderManager().initLoader(0, null, this);
         setHasOptionsMenu(true);
         colorArray = getResources().getStringArray(R.array.colors);
     }
@@ -137,6 +132,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         List<WeekViewEvent> events = new LinkedList<>();
         long weekIndex = 0;
+        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null,null, null, null);
+        assert cursor != null;
         if(cursor.moveToFirst()){
             do {
                 weekIndex++;
@@ -150,6 +147,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
             }
             while (cursor.moveToNext());
         }
+        cursor.close();
         return events;
     }
 
@@ -171,20 +169,5 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                 return hour + ":00";
             }
         });
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), EventContract.Event.CONTENT_URI, null,null, null, null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        cursor = data;
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        cursor = null;
     }
 }
