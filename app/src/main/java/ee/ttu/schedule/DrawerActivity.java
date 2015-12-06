@@ -17,6 +17,7 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.vadimstrukov.ttuschedule.R;
 
 import ee.ttu.schedule.fragment.AboutFragment;
+import ee.ttu.schedule.fragment.ChangeScheduleFragment;
 import ee.ttu.schedule.fragment.ScheduleFragment;
 import ee.ttu.schedule.fragment.UpdateScheduleFragment;
 
@@ -55,7 +56,7 @@ public class DrawerActivity extends AppCompatActivity {
                                     tempFragment = new ScheduleFragment();
                                     break;
                                 case 1:
-                                    tempFragment = new UpdateScheduleFragment();
+                                    tempFragment = ChangeScheduleFragment.newInstance(null, null);
                                     break;
                                 case 2:
                                     tempFragment = new AboutFragment();
