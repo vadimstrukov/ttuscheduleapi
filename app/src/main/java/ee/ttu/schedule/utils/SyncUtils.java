@@ -12,10 +12,11 @@ import ee.ttu.schedule.service.adapter.SyncAdapter;
 
 public class SyncUtils {
     private Account account;
+    private AccountManager accountManager;
 
     public SyncUtils(Context context) {
         account = new Account(context.getString(R.string.app_name), "ee.ttu.schedule");
-        AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
         if (accountManager.addAccountExplicitly(account, null, null)) {
             ContentResolver.setIsSyncable(account, "ee.ttu.schedule", 1);
         }
