@@ -9,7 +9,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.AttributeSet;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -18,7 +17,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -44,13 +42,9 @@ import ee.ttu.schedule.utils.ParseICSUtil;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by vadimstrukov on 11/18/15.
- */
 public class MainActivity extends AppCompatActivity {
 
     private Button getScheduleButton;
@@ -93,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 groupField.setAdapter(adapter);
                 inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
                 getScheduleButton = (Button) findViewById(R.id.btn_get);
+                getScheduleButton.setVisibility(View.VISIBLE);
                 groupField.addTextChangedListener(new MyTextWatcher(groupField));
                 loading_panel = findViewById(R.id.loadingPanel);
                 loading_panel.setVisibility(View.INVISIBLE);
@@ -131,17 +126,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         loading_panel.setVisibility(View.VISIBLE);
+        getScheduleButton.setVisibility(View.INVISIBLE);
         InputMethodManager imm =
                 (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(groupField.getWindowToken(), 0);
-
-        Toast.makeText(getApplicationContext(), "Schedule loading...", Toast.LENGTH_SHORT).show();
         group = groupField.getText().toString().toUpperCase();
         RequestQueue queue = Volley.newRequestQueue(this);
         String request = Constants.URL + "/schedule?groups=" + group;
         JsonObjectRequest jsRequest = new JsonObjectRequest(Request.Method.GET, request,
-
-
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -152,10 +144,8 @@ public class MainActivity extends AppCompatActivity {
                             if (handler.getAllSubjects().isEmpty()) {
                                 ParseICSUtil parseICSUtil = new ParseICSUtil();
                                 parseICSUtil.getData(subjectMap.get(group), MainActivity.this);
-                                Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
+                                startActivity(DrawerActivity.class, "Welcome!");
                                 loading_panel.setVisibility(View.INVISIBLE);
-                                startActivity(intent);
-                                finish();
                             }
                         } catch (IOException | ParseException | ParserException e) {
                             e.printStackTrace();
@@ -167,16 +157,10 @@ public class MainActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(MainActivity.this, "Failure!", Toast.LENGTH_SHORT).show();
                 loading_panel.setVisibility(View.INVISIBLE);
+                getScheduleButton.setVisibility(View.VISIBLE);
 
             }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("groups", "RDIR51");
-                return params;
-            }
-        };
+        });
         queue.add(jsRequest);
     }
 
