@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         syncUtils = new SyncUtils(getApplicationContext());
-        syncUtils.syncGroups();
         String group = PreferenceManager.getDefaultSharedPreferences(this).getString("group", null);
         if(group == null){
+            syncUtils.syncGroups();
             setContentView(R.layout.start_activity);
             loading_panel = findViewById(R.id.loadingPanel);
             groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
@@ -91,11 +91,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             loading_panel.setVisibility(View.INVISIBLE);
         }
         else {
-            syncUtils.syncEvents(group);
+            Intent intent = new Intent(MainActivity.this, DrawerActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
-
-
 
     @Override
     protected void onResume() {
@@ -156,5 +156,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public CharSequence convertToString(Cursor cursor) {
         return cursor.getString(1);
     }
-
 }
