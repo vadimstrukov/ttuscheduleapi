@@ -9,8 +9,10 @@ import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -25,6 +27,7 @@ import org.json.JSONObject;
 import ee.ttu.schedule.model.Event;
 import ee.ttu.schedule.provider.EventContract;
 import ee.ttu.schedule.provider.GroupContract;
+import ee.ttu.schedule.utils.Constants;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response.Listener<JSONObject>, Response.ErrorListener {
     private final String TAG = this.getClass().getSimpleName();
@@ -48,6 +51,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
         switch (extras.getInt(SYNC_TYPE, 0)){
             case SYNC_GROUPS:
                 JsonObjectRequest groupsRequest = new JsonObjectRequest(Request.Method.GET, String.format("%1$s/groups", URL), this, this);
+                groupsRequest.setRetryPolicy(new DefaultRetryPolicy(15000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                 requestQueue.add(groupsRequest);
                 break;
             case SYNC_EVENTS:
@@ -73,6 +77,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                     contentValues.put(EventContract.EventColumns.KEY_SUMMARY, event.getSummary());
                     providerClient.insert(EventContract.Event.CONTENT_URI, contentValues);
                 }
+                PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString("group", response.getString("group")).commit();
             }
             else if(response.has("groups")){
                 String[] groups = gson.fromJson(response.getJSONArray("groups").toString(), String[].class);
@@ -89,19 +94,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
         }
         finally {
             if(response.has("events"))
-                broadcastIntent(200);
+            {
+                broadcastIntent(Constants.SYNC_STATUS_OK);
+            }
         }
     }
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        broadcastIntent(error.networkResponse.statusCode);
+        broadcastIntent(Constants.SYNC_STATUS_FAILED);
     }
 
     private void broadcastIntent(int status){
         Intent intent = new Intent();
         intent.setAction("ee.ttu.schedule.SYNC_FINISHED");
-        intent.putExtra("status", status);
+        intent.putExtra(Constants.SYNC_STATUS, status);
         getContext().sendBroadcast(intent);
     }
 }

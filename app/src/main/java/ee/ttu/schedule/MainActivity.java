@@ -1,19 +1,14 @@
 package ee.ttu.schedule;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -32,7 +27,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ee.ttu.schedule.provider.GroupContract;
-import ee.ttu.schedule.service.adapter.SyncAdapter;
+import ee.ttu.schedule.utils.Constants;
+import ee.ttu.schedule.utils.SyncUtils;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, TextWatcher, FilterQueryProvider, SimpleCursorAdapter.CursorToStringConverter {
 
@@ -43,19 +39,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private SimpleCursorAdapter cursorAdapter;
 
-    private AccountManager accountManager;
-    private Account account;
+    private SyncUtils syncUtils;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            switch (intent.getIntExtra("status", 0)){
-                case 200:
+            switch (intent.getIntExtra(Constants.SYNC_STATUS, -1)){
+                case Constants.SYNC_STATUS_OK:
                     intent = new Intent(MainActivity.this, DrawerActivity.class);
                     startActivity(intent);
                     finish();
-                default:
-                    loading_panel.setVisibility(View.INVISIBLE);
+                case Constants.SYNC_STATUS_FAILED:
+                    if(loading_panel != null)
+                        loading_panel.setVisibility(View.INVISIBLE);
+                    break;
             }
         }
     };
@@ -64,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onReceive(Context context, Intent intent) {
             NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
             if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
-                if(groupValidate(groupField.getText().toString()))
+                if(groupField != null && groupValidate(groupField.getText().toString()))
                     inputLayoutGroup.setErrorEnabled(false);
             }
             else
@@ -75,29 +72,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle bundle = new Bundle();
-        bundle.putInt(SyncAdapter.SYNC_TYPE, SyncAdapter.SYNC_GROUPS);
-        sync(bundle);
-
-        setContentView(R.layout.start_activity);
-        groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
-        cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
-                new String[]{GroupContract.GroupColumns.KEY_NAME},new int[]{android.R.id.text1}, 0);
-        cursorAdapter.setFilterQueryProvider(this);
-        cursorAdapter.setCursorToStringConverter(this);
-        groupField.setAdapter(cursorAdapter);
-        groupField.addTextChangedListener(this);
-        inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
-        getScheduleButton = (Button) findViewById(R.id.btn_get);
-        getScheduleButton.setOnClickListener(this);
-        loading_panel = findViewById(R.id.loadingPanel);
-        loading_panel.setVisibility(View.INVISIBLE);
+        syncUtils = new SyncUtils(getApplicationContext());
+        syncUtils.syncGroups();
+        String group = PreferenceManager.getDefaultSharedPreferences(this).getString("group", null);
+        if(group == null){
+            setContentView(R.layout.start_activity);
+            loading_panel = findViewById(R.id.loadingPanel);
+            groupField = (AutoCompleteTextView) findViewById(R.id.input_group);
+            cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, null,
+                    new String[]{GroupContract.GroupColumns.KEY_NAME},new int[]{android.R.id.text1}, 0);
+            cursorAdapter.setFilterQueryProvider(this);
+            cursorAdapter.setCursorToStringConverter(this);
+            groupField.setAdapter(cursorAdapter);
+            groupField.addTextChangedListener(this);
+            inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
+            getScheduleButton = (Button) findViewById(R.id.btn_get);
+            getScheduleButton.setOnClickListener(this);
+            loading_panel.setVisibility(View.INVISIBLE);
+        }
+        else {
+            syncUtils.syncEvents(group);
+        }
     }
+
+
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(broadcastReceiver, new IntentFilter("ee.ttu.schedule.SYNC_FINISHED"));
+        registerReceiver(broadcastReceiver, new IntentFilter(Constants.SYNCHRONIZATION_ACTION));
         registerReceiver(networkBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
@@ -110,12 +113,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(SyncAdapter.SYNC_TYPE, SyncAdapter.SYNC_EVENTS);
-        bundle.putString("group", groupField.getText().toString());
         loading_panel.setVisibility(View.VISIBLE);
+        syncUtils.syncEvents(groupField.getText().toString());
         ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
-        sync(bundle);
     }
 
     @Override
@@ -143,18 +143,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Boolean groupValidate(String string){
         Matcher matcher = Pattern.compile("^[a-z][a-z][a-z][a-z][0-9][0-9]").matcher(string);
         return matcher.matches();
-    }
-
-    private void sync(Bundle bundle){
-        Bundle coreBundle = new Bundle(bundle);
-        Account account = new Account(getString(R.string.app_name), "ee.ttu.schedule");
-        AccountManager accountManager = (AccountManager) getApplicationContext().getSystemService(ACCOUNT_SERVICE);
-        if (accountManager.addAccountExplicitly(account, null, null)) {
-            ContentResolver.setIsSyncable(account, "ee.ttu.schedule", 1);
-        }
-        coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(account, "ee.ttu.schedule", bundle);
     }
 
     @Override
