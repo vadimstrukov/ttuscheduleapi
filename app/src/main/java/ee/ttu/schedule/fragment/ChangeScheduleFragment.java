@@ -2,19 +2,13 @@ package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.app.SearchManager;
-import android.app.SearchableInfo;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.content.ContentResolver;
 import android.content.CursorLoader;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.Loader;
+import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
@@ -35,29 +28,21 @@ import com.vadimstrukov.ttuschedule.R;
 import java.util.HashMap;
 import java.util.Map;
 
+import ee.ttu.schedule.provider.BaseContract;
 import ee.ttu.schedule.provider.GroupContract;
-import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener {
+public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener, SyncStatusObserver {
     private ListView groupListView;
     private SearchView searchView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private CursorAdapter groupCursorAdapter;
 
+    private Object syncObserverHandle;
+
     private Map<Long, String> groupMap;
 
     private SyncUtils syncUtils;
-
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            switch (intent.getIntExtra(Constants.SYNC_STATUS, -1)) {
-                case Constants.SYNC_STATUS_OK:
-                    swipeRefreshLayout.setRefreshing(false);
-            }
-        }
-    };
 
     private static final String GROUP_FRAGMENT = "group_fragment";
 
@@ -92,13 +77,18 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(Constants.SYNCHRONIZATION_ACTION));
+        onStatusChanged(0);
+        final int mask = ContentResolver.SYNC_OBSERVER_TYPE_PENDING | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE;
+        syncObserverHandle = ContentResolver.addStatusChangeListener(mask, this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(broadcastReceiver);
+        if(syncObserverHandle !=null){
+            ContentResolver.removeStatusChangeListener(syncObserverHandle);
+            syncObserverHandle = null;
+        }
     }
 
     @Override
@@ -184,5 +174,17 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         bundle.putString(GROUP_FRAGMENT, newText);
         getLoaderManager().restartLoader(0, bundle, this);
         return false;
+    }
+
+    @Override
+    public void onStatusChanged(int which) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                boolean syncActive = ContentResolver.isSyncActive(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
+                boolean syncPending = ContentResolver.isSyncPending(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
+                swipeRefreshLayout.setRefreshing(syncActive || syncPending);
+            }
+        });
     }
 }

@@ -41,4 +41,8 @@ public class SyncUtils {
         coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(account, "ee.ttu.schedule", coreBundle);
     }
+
+    public Account getAccount() {
+        return account;
+    }
 }

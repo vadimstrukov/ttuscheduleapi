@@ -1,7 +1,6 @@
 package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -37,7 +36,6 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
-import ee.ttu.schedule.model.Event;
 import ee.ttu.schedule.provider.EventContract;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
@@ -57,7 +55,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.content_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
         mWeekView = (WeekView) rootView.findViewById(R.id.weekView);
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
@@ -71,7 +69,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
         MenuItem menuItem = menu.findItem(R.id.action_today);
-        setTodayIcon((LayerDrawable)menuItem.getIcon(), getActivity(), "EET");
+        setTodayIcon((LayerDrawable) menuItem.getIcon(), getActivity(), "EET");
         super.onCreateOptionsMenu(menu, inflater);
     }
 

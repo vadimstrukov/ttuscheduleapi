@@ -20,6 +20,9 @@
     <string name="loading_title">Processing</string>
     <string name="loading_message">Please wait...</string>
 
+    <string name="loading_successful">Loading successful</string>
+    <string name="loading_failed">Loading failed</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

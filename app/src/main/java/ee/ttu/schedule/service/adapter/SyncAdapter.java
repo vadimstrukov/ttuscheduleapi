@@ -39,6 +39,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
     private static final String URL = "http://test-patla4.rhcloud.com/api/v1";
 
     private ContentProviderClient providerClient;
+    private SyncResult syncResult;
 
     public static final String SYNC_TYPE = "sync_type";
     public static final int SYNC_GROUPS = 0;
@@ -52,6 +53,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
     public void onPerformSync(Account account, final Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(TAG, "Syncing started");
         this.providerClient = provider;
+        this.syncResult = syncResult;
         RequestQueue requestQueue = Volley.newRequestQueue(getContext());
         switch (extras.getInt(SYNC_TYPE, 0)){
             case SYNC_GROUPS:
@@ -82,6 +84,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                     contentValues.put(EventContract.EventColumns.KEY_LOCATION, event.getLocation());
                     contentValues.put(EventContract.EventColumns.KEY_SUMMARY, event.getSummary());
                     asyncQueryHandler.startInsert(-1, null, EventContract.Event.CONTENT_URI, contentValues);
+                    syncResult.stats.numInserts++;
                 }
                 PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString("group", response.getString("group")).commit();
             }
