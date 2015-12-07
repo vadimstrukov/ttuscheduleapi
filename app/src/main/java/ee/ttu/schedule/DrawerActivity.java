@@ -56,7 +56,7 @@ public class DrawerActivity extends AppCompatActivity {
                                     tempFragment = new ScheduleFragment();
                                     break;
                                 case 1:
-                                    tempFragment = ChangeScheduleFragment.newInstance(null, null);
+                                    tempFragment = new ChangeScheduleFragment();
                                     break;
                                 case 2:
                                     tempFragment = new AboutFragment();
