@@ -60,9 +60,10 @@
                 android:text="@string/loading_text"
                 />
             <me.zhanghai.android.materialprogressbar.MaterialProgressBar
-                android:layout_width="wrap_content"
+                android:id="@+id/progressBar"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:indeterminate="true"
+                android:indeterminate="false"
                 app:mpb_progressStyle="horizontal"
                 style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal"
                 android:layout_alignParentBottom="true"

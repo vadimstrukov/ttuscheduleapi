@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.FilterQueryProvider;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 
 import com.vadimstrukov.ttuschedule.R;
@@ -34,10 +36,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AutoCompleteTextView groupField;
     private TextInputLayout inputLayoutGroup;
     private View loading_panel;
-
     private SimpleCursorAdapter cursorAdapter;
-
     private SyncUtils syncUtils;
+    private ProgressBar progBar;
+    private Handler mHandler = new Handler();;
+    private int mProgressStatus = 0;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -47,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent = new Intent(MainActivity.this, DrawerActivity.class);
                     startActivity(intent);
                     finish();
-                    getScheduleButton.setVisibility(View.INVISIBLE);
                 case Constants.SYNC_STATUS_FAILED:
                     if (loading_panel != null) {
                         loading_panel.setVisibility(View.INVISIBLE);
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             groupField.setAdapter(cursorAdapter);
             inputLayoutGroup = (TextInputLayout) findViewById(R.id.input_layout_group);
             getScheduleButton = (Button) findViewById(R.id.btn_get);
+            progBar = (ProgressBar) findViewById(R.id.progressBar);
             getScheduleButton.setOnClickListener(this);
             loading_panel.setVisibility(View.INVISIBLE);
         } else {
@@ -104,9 +107,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             loading_panel.setVisibility(View.VISIBLE);
             syncUtils.syncEvents(groupField.getText().toString());
             ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(groupField.getWindowToken(), 0);
+            updateProgressBar();
         }
     }
 
+    public void updateProgressBar() {
+        new Thread(new Runnable() {
+            public void run() {
+                while (mProgressStatus < 100) {
+                    mProgressStatus += 10;
+                    mHandler.post(new Runnable() {
+                        public void run() {
+                            progBar.setProgress(mProgressStatus);
+                        }
+                    });
+                    try {
+                        Thread.sleep(150);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
 
     private boolean groupValidate(String string) {
         NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
