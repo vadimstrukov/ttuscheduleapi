@@ -102,6 +102,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String sortOrder = GroupContract.GroupColumns.KEY_NAME + " ASC";
         String selection = String.format("%1$s like ?", GroupContract.GroupColumns.KEY_NAME);
         String[] selectionArgs = new String[]{"%" + args.getString(GROUP_FRAGMENT, "") + "%"};
         return new CursorLoader(getActivity(), GroupContract.Group.CONTENT_URI, null, selection, selectionArgs, null);

@@ -121,7 +121,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
 
     private void broadcastIntent(int status){
         Intent intent = new Intent();
-        intent.setAction("ee.ttu.schedule.SYNC_FINISHED");
+        intent.setAction(Constants.SYNCHRONIZATION_ACTION);
         intent.putExtra(Constants.SYNC_STATUS, status);
         getContext().sendBroadcast(intent);
     }
