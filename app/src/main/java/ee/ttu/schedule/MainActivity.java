@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SimpleCursorAdapter cursorAdapter;
     private SyncUtils syncUtils;
     private ProgressBar progBar;
-    private Handler mHandler = new Handler();;
+    private Handler mHandler = new Handler();
     private int mProgressStatus = 0;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        progBar.setProgress(0);
         if (groupValidate(groupField.getText().toString())) {
             inputLayoutGroup.setErrorEnabled(false);
             getScheduleButton.setVisibility(View.INVISIBLE);
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     });
                     try {
-                        Thread.sleep(150);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
