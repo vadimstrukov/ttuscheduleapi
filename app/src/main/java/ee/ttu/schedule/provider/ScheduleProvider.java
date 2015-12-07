@@ -48,7 +48,11 @@ public class ScheduleProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
         }
-        return builder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Context context = getContext();
+        assert context != null;
+        Cursor cursor = builder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return cursor;
     }
 
     @Nullable
@@ -72,11 +76,10 @@ public class ScheduleProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri " + uri);
         }
-        uri = Uri.parse(EventContract.Event.CONTENT_URI + "/" + id);
         Context context = getContext();
         assert context != null;
         getContext().getContentResolver().notifyChange(uri, null, false);
-        return uri;
+        return Uri.parse(EventContract.Event.CONTENT_URI + "/" + id);
     }
 
     @Override
