@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,12 +24,20 @@ import android.widget.SimpleCursorAdapter;
 
 import com.vadimstrukov.ttuschedule.R;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ee.ttu.schedule.provider.GroupContract;
+import ee.ttu.schedule.utils.SyncUtils;
 
 public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, TextWatcher {
     private ListView groupListView;
     private EditText groupEditText;
     private CursorAdapter groupCursorAdapter;
+
+    private Map<Long, String> groupMap;
+
+    private SyncUtils syncUtils;
 
     private static final String GROUP_FRAGMENT = "group_fragment";
 
@@ -41,6 +50,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        syncUtils = new SyncUtils(getActivity());
         groupCursorAdapter = new SimpleCursorAdapter(getActivity(), android.R.layout.simple_list_item_multiple_choice, null,
                 new String[]{GroupContract.GroupColumns.KEY_NAME}, new int[]{android.R.id.text1}, 0);
         groupListView.setAdapter(groupCursorAdapter);
@@ -77,11 +87,16 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-
+        if (checked)
+            groupMap.put(id, groupCursorAdapter.getCursor().getString(1));
+        else
+            groupMap.remove(id);
     }
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        groupMap = new HashMap<>();
+        mode.getMenuInflater().inflate(R.menu.menu_group, menu);
         return true;
     }
 
@@ -92,7 +107,11 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        return false;
+        for(Map.Entry<Long, String> entry : groupMap.entrySet()){
+            syncUtils.syncEvents(entry.getValue());
+        }
+        mode.finish();
+        return true;
     }
 
     @Override
