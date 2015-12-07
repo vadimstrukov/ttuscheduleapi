@@ -8,26 +8,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/groupEditText"
-            android:layout_gravity="center_horizontal"
-            android:inputType="text"
-            android:singleLine="true"
-            android:hint="@string/enter_group"/>
-
         <ListView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/groupListView"
             android:layout_gravity="center" />
-    </LinearLayout>
-
     </android.support.v4.widget.SwipeRefreshLayout>
+
 </FrameLayout>
