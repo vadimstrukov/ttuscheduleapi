@@ -43,41 +43,41 @@ public class DrawerActivity extends AppCompatActivity {
                         new PrimaryDrawerItem().withName(R.string.app_name).withIcon(GoogleMaterial.Icon.gmd_home).withIdentifier(0),
                         new SectionDrawerItem().withName(R.string.drawer_item_settings),
                         new SecondaryDrawerItem().withName(R.string.drawer_item_update).withIcon(GoogleMaterial.Icon.gmd_refresh).withIdentifier(1),
-                        new SectionDrawerItem().withName(R.string.drawer_item_about),
-                        new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withIcon(GoogleMaterial.Icon.gmd_mail_send).withIdentifier(2)
+                        new SectionDrawerItem().withName(R.string.drawer_item_additional),
+                        new SecondaryDrawerItem().withName(R.string.drawer_item_about).withIcon(GoogleMaterial.Icon.gmd_info).withIdentifier(2)
                 ).withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        if (drawerItem != null) {
-                            switch (drawerItem.getIdentifier()) {
-                                case 0:
-                                    tempFragment = new ScheduleFragment();
-                                    break;
-                                case 1:
-                                    tempFragment = new UpdateScheduleFragment();
-                                    break;
-                                case 2:
-                                    tempFragment = new AboutFragment();
-                                    break;
-                            }
-                        }
-                        return false;
+            @Override
+            public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                if (drawerItem != null) {
+                    switch (drawerItem.getIdentifier()) {
+                        case 0:
+                            tempFragment = new ScheduleFragment();
+                            break;
+                        case 1:
+                            tempFragment = new UpdateScheduleFragment();
+                            break;
+                        case 2:
+                            tempFragment = new AboutFragment();
+                            break;
                     }
+                }
+                return false;
+            }
         }).withOnDrawerListener(new Drawer.OnDrawerListener() {
 
-                    @Override
-                    public void onDrawerOpened(View drawerView) {
-                    }
+            @Override
+            public void onDrawerOpened(View drawerView) {
+            }
 
-                    @Override
-                    public void onDrawerClosed(View drawerView) {
-                        updateFragment();
-                    }
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                updateFragment();
+            }
 
-                    @Override
-                    public void onDrawerSlide(View drawerView, float slideOffset) {
-                    }
-                }).build();
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+        }).build();
     }
     private void updateFragment(){
         if (tempFragment != null) {
