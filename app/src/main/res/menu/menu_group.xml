@@ -2,6 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_today"
-        android:icon="@android:drawable/ic_input_get"
-        android:title="get" />
+        android:icon="@drawable/ic_autorenew_white"
+        android:title="Renew" />
 </menu>
