@@ -2,10 +2,16 @@ package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -27,17 +33,30 @@ import com.vadimstrukov.ttuschedule.R;
 import java.util.HashMap;
 import java.util.Map;
 
+import ee.ttu.schedule.DrawerActivity;
 import ee.ttu.schedule.provider.GroupContract;
+import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, TextWatcher {
+public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, TextWatcher, SwipeRefreshLayout.OnRefreshListener {
     private ListView groupListView;
     private EditText groupEditText;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private CursorAdapter groupCursorAdapter;
 
     private Map<Long, String> groupMap;
 
     private SyncUtils syncUtils;
+
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getIntExtra(Constants.SYNC_STATUS, -1)) {
+                case Constants.SYNC_STATUS_OK:
+                    swipeRefreshLayout.setRefreshing(false);
+            }
+        }
+    };
 
     private static final String GROUP_FRAGMENT = "group_fragment";
 
@@ -58,6 +77,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         groupListView.setMultiChoiceModeListener(this);
         groupListView.setOnItemClickListener(this);
         groupEditText.addTextChangedListener(this);
+        swipeRefreshLayout.setOnRefreshListener(this);
     }
 
     @Override
@@ -65,7 +85,20 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         View view = inflater.inflate(R.layout.fragment_change_schedule, container, false);
         groupListView = (ListView) view.findViewById(R.id.groupListView);
         groupEditText = (EditText) view.findViewById(R.id.groupEditText);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(Constants.SYNCHRONIZATION_ACTION));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(broadcastReceiver);
     }
 
     @Override
@@ -107,6 +140,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        swipeRefreshLayout.setRefreshing(true);
         for(Map.Entry<Long, String> entry : groupMap.entrySet()){
             syncUtils.syncEvents(entry.getValue());
         }
@@ -139,5 +173,10 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         Bundle bundle = new Bundle();
         bundle.putString(GROUP_FRAGMENT, s.toString());
         getLoaderManager().restartLoader(0, bundle, this);
+    }
+
+    @Override
+    public void onRefresh() {
+        syncUtils.syncGroups();
     }
 }

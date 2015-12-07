@@ -3,6 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ee.ttu.schedule.fragment.ChangeScheduleFragment">
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     <LinearLayout
         android:orientation="vertical"
@@ -25,4 +29,5 @@
             android:layout_gravity="center" />
     </LinearLayout>
 
+    </android.support.v4.widget.SwipeRefreshLayout>
 </FrameLayout>
