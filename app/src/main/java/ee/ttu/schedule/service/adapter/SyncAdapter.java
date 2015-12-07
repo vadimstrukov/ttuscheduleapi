@@ -2,14 +2,13 @@ package ee.ttu.schedule.service.adapter;
 
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
-import android.content.AsyncQueryHandler;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.SyncResult;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -70,20 +69,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
 
     @Override
     public void onResponse(JSONObject response) {
+        final ArrayList<ContentProviderOperation> operations = new ArrayList<>();
         Gson gson = new Gson();
-        scheduleAsyncQueryHandler asyncQueryHandler = new scheduleAsyncQueryHandler(getContext().getContentResolver());
         try {
             if(response.has("events")){
                 Event[] events = gson.fromJson(response.getJSONArray("events").toString(), Event[].class);
                 providerClient.delete(EventContract.Event.CONTENT_URI, null, null);
                 for(Event event : events) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(EventContract.EventColumns.KEY_DT_START, event.getDateStart());
-                    contentValues.put(EventContract.EventColumns.KEY_DT_END, event.getDateEnd());
-                    contentValues.put(EventContract.EventColumns.KEY_DESCRIPTION, event.getDescription());
-                    contentValues.put(EventContract.EventColumns.KEY_LOCATION, event.getLocation());
-                    contentValues.put(EventContract.EventColumns.KEY_SUMMARY, event.getSummary());
-                    asyncQueryHandler.startInsert(-1, null, EventContract.Event.CONTENT_URI, contentValues);
+                    operations.add(ContentProviderOperation.newInsert(EventContract.Event.CONTENT_URI)
+                            .withValue(EventContract.EventColumns.KEY_DT_START, event.getDateStart())
+                            .withValue(EventContract.EventColumns.KEY_DT_END, event.getDateEnd())
+                            .withValue(EventContract.EventColumns.KEY_DESCRIPTION, event.getDescription())
+                            .withValue(EventContract.EventColumns.KEY_LOCATION, event.getLocation())
+                            .withValue(EventContract.EventColumns.KEY_SUMMARY, event.getSummary()).build());
                     syncResult.stats.numInserts++;
                 }
                 PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString("group", response.getString("group")).commit();
@@ -92,11 +90,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
                 String[] groups = gson.fromJson(response.getJSONArray("groups").toString(), String[].class);
                 providerClient.delete(GroupContract.Group.CONTENT_URI, null, null);
                 for(String group_name : groups){
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(GroupContract.Group.KEY_NAME, group_name);
-                    asyncQueryHandler.startInsert(-1, null, GroupContract.Group.CONTENT_URI, contentValues);
+                    operations.add(ContentProviderOperation.newInsert(GroupContract.Group.CONTENT_URI)
+                            .withValue(GroupContract.Group.KEY_NAME, group_name).build());
+                    syncResult.stats.numInserts++;
                 }
             }
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        providerClient.applyBatch(operations);
+                    } catch (OperationApplicationException | RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
         catch (JSONException | RemoteException  e) {
             e.printStackTrace();
@@ -116,11 +124,5 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Response
         intent.setAction("ee.ttu.schedule.SYNC_FINISHED");
         intent.putExtra(Constants.SYNC_STATUS, status);
         getContext().sendBroadcast(intent);
-    }
-    private static class scheduleAsyncQueryHandler extends AsyncQueryHandler {
-
-        public scheduleAsyncQueryHandler(ContentResolver contentResolver) {
-            super(contentResolver);
-        }
     }
 }
