@@ -19,7 +19,6 @@ import com.vadimstrukov.ttuschedule.R;
 import ee.ttu.schedule.fragment.AboutFragment;
 import ee.ttu.schedule.fragment.ChangeScheduleFragment;
 import ee.ttu.schedule.fragment.ScheduleFragment;
-import ee.ttu.schedule.fragment.UpdateScheduleFragment;
 
 public class DrawerActivity extends AppCompatActivity {
 
@@ -89,4 +88,5 @@ public class DrawerActivity extends AppCompatActivity {
         }
         tempFragment = null;
     }
+
 }

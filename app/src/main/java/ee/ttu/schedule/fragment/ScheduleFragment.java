@@ -1,10 +1,13 @@
 package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
@@ -30,7 +33,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 
+import ee.ttu.schedule.drawable.DayOfMonthDrawable;
 import ee.ttu.schedule.provider.EventContract;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
@@ -64,6 +69,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_today);
+        setTodayIcon((LayerDrawable)menuItem.getIcon(), getActivity(), "EET");
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -113,9 +120,9 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         alertDialog.setTitle(event.getName());
         String dateStart = mFormat.format((double) event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getStartTime().get(Calendar.MINUTE));
         String dateEnd = mFormat.format((double) event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getEndTime().get(Calendar.MINUTE));
-        String description = event.getDescription();
-        String location = event.getLocation();
-        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
+//        String description = event.getDescription();
+//        String location = event.getLocation();
+//        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -144,7 +151,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                     Calendar endTime = GregorianCalendar.getInstance();
                     startTime.setTime(new Date(cursor.getLong(1)));
                     endTime.setTime(new Date(cursor.getLong(2)));
-                    WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5), cursor.getString(3), cursor.getString(4), startTime, endTime);
+//                    WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5), cursor.getString(3), cursor.getString(4), startTime, endTime);
+                    WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5) + "\ncursor.getString(4)", startTime, endTime);
                     event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
                     events.add(event);
                 }
@@ -174,5 +182,21 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                 return hour + ":00";
             }
         });
+    }
+
+    private void setTodayIcon(LayerDrawable icon, Context context, String timezone) {
+        DayOfMonthDrawable today;
+        // Reuse current drawable if possible
+        Drawable currentDrawable = icon.findDrawableByLayerId(R.id.today_icon_day);
+        if (currentDrawable != null && currentDrawable instanceof DayOfMonthDrawable) {
+            today = (DayOfMonthDrawable)currentDrawable;
+        } else {
+            today = new DayOfMonthDrawable(context);
+        }
+        // Set the day and update the icon
+        Calendar calendar = GregorianCalendar.getInstance(TimeZone.getDefault());
+        today.setDayOfMonth(calendar.get(Calendar.DAY_OF_MONTH));
+        icon.mutate();
+        icon.setDrawableByLayerId(R.id.today_icon_day, today);
     }
 }

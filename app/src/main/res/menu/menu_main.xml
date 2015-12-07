@@ -1,11 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MyActivity" >
-    <item android:id="@+id/action_today"
+    tools:context=".MyActivity">
+    <item
+        android:id="@+id/action_today"
+        android:alphabeticShortcut="t"
         android:title="@string/action_today"
-        android:orderInCategory="100"
-        app:showAsAction="ifRoom"/>
+        android:icon="@drawable/today_icon"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="1" />
     <group android:checkableBehavior="single">
         <item android:id="@+id/action_day_view"
             android:title="@string/action_day_view"

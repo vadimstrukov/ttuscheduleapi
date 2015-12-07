@@ -1,0 +1,10 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/today_icon_background"
+        android:drawable="@drawable/ic_today_white"
+        android:gravity="center" />
+    <item
+        android:id="@+id/today_icon_day"
+        android:drawable="@drawable/ic_today_white"
+        android:gravity="center"/>
+</layer-list>
