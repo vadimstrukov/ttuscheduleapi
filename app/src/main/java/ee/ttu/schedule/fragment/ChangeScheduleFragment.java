@@ -34,7 +34,6 @@ import ee.ttu.schedule.utils.SyncUtils;
 
 public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener, SyncStatusObserver {
     private ListView groupListView;
-    private SearchView searchView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private CursorAdapter groupCursorAdapter;
 
@@ -95,7 +94,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_group, menu);
-        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setIconifiedByDefault(false);
         searchView.setOnQueryTextListener(this);
     }
@@ -105,7 +104,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         String sortOrder = GroupContract.GroupColumns.KEY_NAME + " ASC";
         String selection = String.format("%1$s like ?", GroupContract.GroupColumns.KEY_NAME);
         String[] selectionArgs = new String[]{"%" + args.getString(GROUP_FRAGMENT, "") + "%"};
-        return new CursorLoader(getActivity(), GroupContract.Group.CONTENT_URI, null, selection, selectionArgs, null);
+        return new CursorLoader(getActivity(), GroupContract.Group.CONTENT_URI, null, selection, selectionArgs, sortOrder);
     }
 
     @Override
