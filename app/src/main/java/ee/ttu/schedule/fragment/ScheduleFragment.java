@@ -1,6 +1,7 @@
 package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -36,6 +37,7 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
+import ee.ttu.schedule.model.Event;
 import ee.ttu.schedule.provider.EventContract;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
@@ -64,7 +66,6 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         setupDateTimeInterpreter(false);
         return rootView;
     }
-
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -113,6 +114,15 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
+        String description = null;
+        String location = null;
+        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null, "_id = ?", new String[]{String.valueOf(event.getId())}, null);
+        assert cursor != null;
+        if(cursor.moveToFirst()){
+            description = cursor.getString(3);
+            location = cursor.getString(4);
+        }
+        cursor.close();
 
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
         DecimalFormat mFormat = new DecimalFormat("00");
@@ -120,9 +130,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         alertDialog.setTitle(event.getName());
         String dateStart = mFormat.format((double) event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getStartTime().get(Calendar.MINUTE));
         String dateEnd = mFormat.format((double) event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getEndTime().get(Calendar.MINUTE));
-//        String description = event.getDescription();
-//        String location = event.getLocation();
-//        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
+        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -140,19 +148,16 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
         List<WeekViewEvent> events = new LinkedList<>();
-        long weekIndex = 0;
         Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null, null, null, null);
         assert cursor != null;
         if(newMonth == Calendar.getInstance().get(Calendar.MONTH)) {
             if (cursor.moveToFirst()) {
                 do {
-                    weekIndex++;
                     Calendar startTime = GregorianCalendar.getInstance();
                     Calendar endTime = GregorianCalendar.getInstance();
                     startTime.setTime(new Date(cursor.getLong(1)));
                     endTime.setTime(new Date(cursor.getLong(2)));
-//                    WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5), cursor.getString(3), cursor.getString(4), startTime, endTime);
-                    WeekViewEvent event = new WeekViewEvent(weekIndex, cursor.getString(5) + "\ncursor.getString(4)", startTime, endTime);
+                    WeekViewEvent event = new WeekViewEvent(cursor.getInt(0), cursor.getString(5), startTime, endTime);
                     event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
                     events.add(event);
                 }
