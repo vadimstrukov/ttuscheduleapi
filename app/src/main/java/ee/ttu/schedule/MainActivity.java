@@ -3,6 +3,7 @@ package ee.ttu.schedule;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -22,7 +23,7 @@ import ee.ttu.schedule.fragment.ScheduleFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Fragment tempFragment;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +33,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ttu_schedule_ic);
         setSupportActionBar(toolbar);
-        tempFragment = new ScheduleFragment();
-        updateFragment();
 
         new DrawerBuilder()
                 .withActivity(this)
@@ -47,46 +46,29 @@ public class MainActivity extends AppCompatActivity {
                         new SectionDrawerItem().withName(R.string.drawer_item_about),
                         new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withIcon(GoogleMaterial.Icon.gmd_mail_send).withIdentifier(2)
                 ).withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        if (drawerItem != null) {
+            @Override
+            public boolean onItemClick(View view, int position, final IDrawerItem drawerItem) {
+                if (drawerItem != null) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
                             switch (drawerItem.getIdentifier()) {
                                 case 0:
-                                    tempFragment = new ScheduleFragment();
+                                    getFragmentManager().beginTransaction().replace(R.id.flFragments, new ScheduleFragment()).commit();
                                     break;
                                 case 1:
-                                    tempFragment = new ChangeScheduleFragment();
+                                    getFragmentManager().beginTransaction().replace(R.id.flFragments, new ChangeScheduleFragment()).commit();
                                     break;
                                 case 2:
-                                    tempFragment = new AboutFragment();
+                                    getFragmentManager().beginTransaction().replace(R.id.flFragments, new AboutFragment()).commit();
                                     break;
                             }
                         }
-                        return false;
-                    }
-        }).withOnDrawerListener(new Drawer.OnDrawerListener() {
-
-                    @Override
-                    public void onDrawerOpened(View drawerView) {
-                    }
-
-                    @Override
-                    public void onDrawerClosed(View drawerView) {
-                        updateFragment();
-                    }
-
-                    @Override
-                    public void onDrawerSlide(View drawerView, float slideOffset) {
-                    }
-                }).build();
-    }
-    private void updateFragment(){
-        if (tempFragment != null) {
-            final FragmentTransaction transaction = getFragmentManager().beginTransaction();
-            transaction.replace(R.id.flFragments, tempFragment);
-            transaction.commit();
-        }
-        tempFragment = null;
+                    });
+                }
+                return false;
+            }
+        }).build();
     }
 
 }
