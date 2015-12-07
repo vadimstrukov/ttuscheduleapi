@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent = new Intent(MainActivity.this, DrawerActivity.class);
                     startActivity(intent);
                     finish();
+                    break;
                 case Constants.SYNC_STATUS_FAILED:
                     if (loading_panel != null) {
                         loading_panel.setVisibility(View.INVISIBLE);
