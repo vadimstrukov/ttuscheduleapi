@@ -1,7 +1,5 @@
 package ee.ttu.schedule;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +19,7 @@ import ee.ttu.schedule.fragment.AboutFragment;
 import ee.ttu.schedule.fragment.ChangeScheduleFragment;
 import ee.ttu.schedule.fragment.ScheduleFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Drawer.OnDrawerItemClickListener {
 
     private Handler handler = new Handler();
 
@@ -33,42 +31,44 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ttu_schedule_ic);
         setSupportActionBar(toolbar);
-
+        if (savedInstanceState == null) {
+            getFragmentManager().beginTransaction().replace(R.id.flFragments, new ScheduleFragment()).commit();
+        }
         new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .withActionBarDrawerToggle(true)
                 .withHeader(R.layout.drawer_header)
+                .withSelectedItemByPosition(1)
                 .addDrawerItems(
                         new PrimaryDrawerItem().withName(R.string.app_name).withIcon(GoogleMaterial.Icon.gmd_home).withIdentifier(0),
                         new SectionDrawerItem().withName(R.string.drawer_item_settings),
                         new SecondaryDrawerItem().withName(R.string.drawer_item_update).withIcon(GoogleMaterial.Icon.gmd_refresh).withIdentifier(1),
                         new SectionDrawerItem().withName(R.string.drawer_item_about),
-                        new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withIcon(GoogleMaterial.Icon.gmd_mail_send).withIdentifier(2)
-                ).withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-            @Override
-            public boolean onItemClick(View view, int position, final IDrawerItem drawerItem) {
-                if (drawerItem != null) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            switch (drawerItem.getIdentifier()) {
-                                case 0:
-                                    getFragmentManager().beginTransaction().replace(R.id.flFragments, new ScheduleFragment()).commit();
-                                    break;
-                                case 1:
-                                    getFragmentManager().beginTransaction().replace(R.id.flFragments, new ChangeScheduleFragment()).commit();
-                                    break;
-                                case 2:
-                                    getFragmentManager().beginTransaction().replace(R.id.flFragments, new AboutFragment()).commit();
-                                    break;
-                            }
-                        }
-                    });
-                }
-                return false;
-            }
-        }).build();
+                        new SecondaryDrawerItem().withName(R.string.drawer_item_additional).withIcon(GoogleMaterial.Icon.gmd_mail_send).withIdentifier(2)
+                ).withOnDrawerItemClickListener(this).build();
     }
 
+    @Override
+    public boolean onItemClick(View view, int position, final IDrawerItem drawerItem) {
+        if (drawerItem != null) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    switch (drawerItem.getIdentifier()) {
+                        case 0:
+                            getFragmentManager().beginTransaction().replace(R.id.flFragments, new ScheduleFragment()).commit();
+                            break;
+                        case 1:
+                            getFragmentManager().beginTransaction().replace(R.id.flFragments, new ChangeScheduleFragment()).commit();
+                            break;
+                        case 2:
+                            getFragmentManager().beginTransaction().replace(R.id.flFragments, new AboutFragment()).commit();
+                            break;
+                    }
+                }
+            });
+        }
+        return false;
+    }
 }
