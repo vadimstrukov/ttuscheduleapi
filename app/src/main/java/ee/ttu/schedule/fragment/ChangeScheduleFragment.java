@@ -36,7 +36,7 @@ import ee.ttu.schedule.provider.BaseContract;
 import ee.ttu.schedule.provider.GroupContract;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener, SyncStatusObserver {
+public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SearchView.OnQueryTextListener, SyncStatusObserver {
     private ListView groupListView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private CursorAdapter groupCursorAdapter;
@@ -66,7 +66,6 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         groupListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         groupListView.setMultiChoiceModeListener(this);
         groupListView.setOnItemClickListener(this);
-        swipeRefreshLayout.setOnRefreshListener(this);
     }
 
     @Override
@@ -160,12 +159,6 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
     }
-
-    @Override
-    public void onRefresh() {
-        syncUtils.syncGroups();
-    }
-
 
     @Override
     public boolean onQueryTextSubmit(String query) {

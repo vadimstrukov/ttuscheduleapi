@@ -2,17 +2,22 @@ package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Loader;
+import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -21,6 +26,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
@@ -42,11 +48,12 @@ import java.util.Random;
 import java.util.TimeZone;
 
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
+import ee.ttu.schedule.provider.BaseContract;
 import ee.ttu.schedule.provider.EventContract;
 import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, SyncStatusObserver {
 
     public static final int TYPE_DAY_VIEW = 1;
     public static final int TYPE_THREE_DAY_VIEW = 2;
@@ -55,6 +62,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     private Map<Integer, List<WeekViewEvent>> map;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private Object syncObserverHandle;
     private WeekView mWeekView;
     private String[] colorArray;
 
@@ -88,6 +97,9 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
         mWeekView = (WeekView) rootView.findViewById(R.id.weekView);
+        swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.setEnabled(false);
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
@@ -105,6 +117,23 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                 break;
         }
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        onStatusChanged(0);
+        final int mask = ContentResolver.SYNC_OBSERVER_TYPE_PENDING | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE;
+        syncObserverHandle = ContentResolver.addStatusChangeListener(mask, this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(syncObserverHandle !=null){
+            ContentResolver.removeStatusChangeListener(syncObserverHandle);
+            syncObserverHandle = null;
+        }
     }
 
     @Override
@@ -242,5 +271,27 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    @Override
+    public void onRefresh() {
+
+    }
+
+    @Override
+    public void onStatusChanged(int which) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NetworkInfo networkInfo = ((ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+                if(networkInfo == null){
+                    ContentResolver.cancelSync(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
+                    Toast.makeText(getActivity(), getActivity().getString(R.string.err_network), Toast.LENGTH_SHORT).show();
+                }
+                boolean syncActive = ContentResolver.isSyncActive(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
+                boolean syncPending = ContentResolver.isSyncPending(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
+                swipeRefreshLayout.setRefreshing(syncActive || syncPending);
+            }
+        });
     }
 }
