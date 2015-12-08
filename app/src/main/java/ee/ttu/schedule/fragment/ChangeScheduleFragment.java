@@ -25,6 +25,7 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vadimstrukov.ttuschedule.R;
@@ -38,6 +39,7 @@ import ee.ttu.schedule.utils.SyncUtils;
 
 public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener, SyncStatusObserver {
     private ListView groupListView;
+    private TextView emptyText;
     private SwipeRefreshLayout swipeRefreshLayout;
     private CursorAdapter groupCursorAdapter;
 
@@ -73,6 +75,8 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_change_schedule, container, false);
         groupListView = (ListView) view.findViewById(R.id.groupListView);
+        emptyText = (TextView) view.findViewById(android.R.id.empty);
+        groupListView.setEmptyView(emptyText);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
         return view;
     }
