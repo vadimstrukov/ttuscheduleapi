@@ -10,6 +10,7 @@ import android.content.OperationApplicationException;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -73,6 +74,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
             provider.applyBatch(operations);
             broadcastIntent(Constants.SYNC_STATUS_OK);
+            PreferenceManager.getDefaultSharedPreferences(getContext()).edit().putString("group", extras.getString("group")).commit();
         }
         catch (RemoteException | JSONException | InterruptedException | ExecutionException | OperationApplicationException e) {
             broadcastIntent(Constants.SYNC_STATUS_FAILED);

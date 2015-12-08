@@ -6,15 +6,19 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+
 import com.vadimstrukov.ttuschedule.R;
 
 public class AboutFragment extends PreferenceFragment {
     private static final String BUILD_VERSION = "build_version";
+    private static final String SELECTED_GROUP = "selected_group";
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         addPreferencesFromResource(R.xml.preferences);
         final Activity activity = getActivity();
+        findPreference(SELECTED_GROUP).setSummary(PreferenceManager.getDefaultSharedPreferences(activity.getBaseContext()).getString("group", null));
         try {
             final PackageInfo packageInfo =
                     activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
