@@ -11,7 +11,7 @@ import com.vadimstrukov.ttuschedule.R;
 import ee.ttu.schedule.service.adapter.SyncAdapter;
 
 public class SyncUtils {
-    private Account account;
+    private final Account account;
 
     public SyncUtils(Context context) {
         account = new Account(context.getString(R.string.app_name), "ee.ttu.schedule");
@@ -39,5 +39,9 @@ public class SyncUtils {
         coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         coreBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(account, "ee.ttu.schedule", coreBundle);
+    }
+
+    public Account getAccount() {
+        return account;
     }
 }
