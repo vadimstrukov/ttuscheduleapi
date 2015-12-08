@@ -4,11 +4,6 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefreshLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
         <com.alamkanak.weekview.WeekView
             android:id="@+id/weekView"
             android:layout_width="match_parent"
@@ -26,6 +21,4 @@
             app:noOfVisibleDays="3"
             app:textSize="12sp"
             app:todayBackgroundColor="#1848adff" />
-    </android.support.v4.widget.SwipeRefreshLayout>
-
 </FrameLayout>

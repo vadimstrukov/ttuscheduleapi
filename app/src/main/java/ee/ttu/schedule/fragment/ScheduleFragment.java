@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -26,7 +25,6 @@ import android.view.ViewGroup;
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
-import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.vadimstrukov.ttuschedule.R;
 
 import java.math.RoundingMode;
