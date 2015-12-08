@@ -73,6 +73,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        syncUtils = new SyncUtils(getActivity());
         colorArray = getResources().getStringArray(R.array.colors);
         eventList = new ArrayList<>();
         if (getArguments() != null)
@@ -84,7 +85,6 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
-        syncUtils = new SyncUtils(getActivity());
         mWeekView = (WeekView) rootView.findViewById(R.id.weekView);
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
