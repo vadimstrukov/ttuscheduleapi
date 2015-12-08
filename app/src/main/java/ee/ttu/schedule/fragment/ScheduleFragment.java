@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 
@@ -48,7 +51,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     private static final String ARG_TYPE = "arg_type";
     private int WEEK_TYPE;
 
-    private List<WeekViewEvent> eventList;
+    private Map<Integer, List<WeekViewEvent>> map;
 
     private WeekView mWeekView;
     private String[] colorArray;
@@ -68,8 +71,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        map = new HashMap<>();
         colorArray = getResources().getStringArray(R.array.colors);
-        eventList = new ArrayList<>();
         if (getArguments() != null)
             WEEK_TYPE = getArguments().getInt(ARG_TYPE, TYPE_THREE_DAY_VIEW);
         setHasOptionsMenu(true);
@@ -141,8 +144,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-        if (newMonth == Calendar.getInstance().get(Calendar.MONTH)) {
-            return eventList;
+        if (map.size() > 0 && map.containsKey(newMonth)) {
+            return map.get(newMonth);
         }
         return new ArrayList<>();
     }
@@ -187,21 +190,34 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), EventContract.Event.CONTENT_URI, null, null, null, null);
+        String orderBy = EventContract.EventColumns.KEY_DT_START + " ASC";
+        return new CursorLoader(getActivity(), EventContract.Event.CONTENT_URI, null, null, null, orderBy);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        eventList.clear();
+        map = new HashMap<>();
         if (data.moveToFirst()) {
+            Calendar calendar = GregorianCalendar.getInstance();
+            calendar.setTimeInMillis(data.getLong(1));
+            int temp = calendar.get(Calendar.MONTH)+1;
+            List<WeekViewEvent> events = new ArrayList<>();
             do {
+                calendar.setTimeInMillis(data.getLong(1));
+                if ((calendar.get(Calendar.MONTH) +1) != temp || data.isAfterLast()) {
+                    map.put(temp, events);
+                    events = new ArrayList<>();
+                }
                 Calendar startTime = GregorianCalendar.getInstance();
                 Calendar endTime = GregorianCalendar.getInstance();
                 startTime.setTime(new Date(data.getLong(1)));
                 endTime.setTime(new Date(data.getLong(2)));
-                WeekViewEvent event = new WeekViewEvent(data.getInt(0), data.getString(5), data.getString(3), data.getString(4),  startTime, endTime);
+                WeekViewEvent event = new WeekViewEvent(data.getInt(0), data.getString(5), data.getString(3), data.getString(4), startTime, endTime);
                 event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
-                eventList.add(event);
+                temp = calendar.get(Calendar.MONTH)+1;
+                events.add(event);
+                if(data.isLast())
+                    map.put(temp, events);
             }
             while (data.moveToNext());
         }
