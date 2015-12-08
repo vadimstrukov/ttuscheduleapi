@@ -10,6 +10,8 @@ import android.preference.PreferenceManager;
 
 import com.vadimstrukov.ttuschedule.R;
 
+import ee.ttu.schedule.utils.Constants;
+
 public class AboutFragment extends PreferenceFragment {
     private static final String BUILD_VERSION = "build_version";
     private static final String SELECTED_GROUP = "selected_group";
@@ -18,7 +20,7 @@ public class AboutFragment extends PreferenceFragment {
         super.onCreate(icicle);
         addPreferencesFromResource(R.xml.preferences);
         final Activity activity = getActivity();
-        findPreference(SELECTED_GROUP).setSummary(PreferenceManager.getDefaultSharedPreferences(activity.getBaseContext()).getString("group", null));
+        findPreference(SELECTED_GROUP).setSummary(PreferenceManager.getDefaultSharedPreferences(activity.getBaseContext()).getString(Constants.GROUP, null));
         try {
             final PackageInfo packageInfo =
                     activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
