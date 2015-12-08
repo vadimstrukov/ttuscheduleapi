@@ -12,6 +12,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -24,6 +26,7 @@ import android.view.ViewGroup;
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
 import com.alamkanak.weekview.WeekViewEvent;
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.vadimstrukov.ttuschedule.R;
 
 import java.math.RoundingMode;
@@ -40,6 +43,7 @@ import java.util.TimeZone;
 
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
 import ee.ttu.schedule.provider.EventContract;
+import ee.ttu.schedule.utils.SyncUtils;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -50,6 +54,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     private List<WeekViewEvent> eventList;
 
+    private SyncUtils syncUtils;
     private WeekView mWeekView;
     private String[] colorArray;
 
@@ -79,6 +84,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
+        syncUtils = new SyncUtils(getActivity());
         mWeekView = (WeekView) rootView.findViewById(R.id.weekView);
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
@@ -109,9 +115,17 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        mWeekView.goToToday();
-        mWeekView.goToHour(8);
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.action_today:
+                mWeekView.goToToday();
+                mWeekView.goToHour(8);
+                return true;
+            case R.id.action_update:
+                syncUtils.syncEvents(PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString("group", null));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
