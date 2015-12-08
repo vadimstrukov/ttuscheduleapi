@@ -12,8 +12,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -72,6 +72,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         map = new HashMap<>();
+        syncUtils = new SyncUtils(getActivity());
         colorArray = getResources().getStringArray(R.array.colors);
         if (getArguments() != null)
             WEEK_TYPE = getArguments().getInt(ARG_TYPE, TYPE_THREE_DAY_VIEW);
@@ -112,9 +113,17 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        mWeekView.goToToday();
-        mWeekView.goToHour(8);
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.action_today:
+                mWeekView.goToToday();
+                mWeekView.goToHour(8);
+                return true;
+            case R.id.action_update:
+                syncUtils.syncEvents(PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(Constants.GROUP, null));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
