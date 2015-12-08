@@ -30,14 +30,14 @@ public class MainActivity extends AppCompatActivity implements Drawer.OnDrawerIt
         this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction().replace(R.id.fragment, ScheduleFragment.newInstance(ScheduleFragment.TYPE_THREE_DAY_VIEW)).commit();
+            getFragmentManager().beginTransaction().replace(R.id.fragment, ScheduleFragment.newInstance(ScheduleFragment.TYPE_DAY_VIEW)).commit();
         }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ttu_schedule_ic);
         setSupportActionBar(toolbar);
         final ArrayList<IDrawerItem> drawerItems = new ArrayList<>();
-        drawerItems.add(new SecondaryDrawerItem().withName(R.string.drawer_item_view_three_days).withIcon(GoogleMaterial.Icon.gmd_view_day).withIdentifier(0));
-        drawerItems.add(new SecondaryDrawerItem().withName(R.string.drawer_item_view_day).withIcon(GoogleMaterial.Icon.gmd_view_column).withIdentifier(1));
+        drawerItems.add(new SecondaryDrawerItem().withName(R.string.drawer_item_view_day).withIcon(GoogleMaterial.Icon.gmd_view_column).withIdentifier(0));
+        drawerItems.add(new SecondaryDrawerItem().withName(R.string.drawer_item_view_three_days).withIcon(GoogleMaterial.Icon.gmd_view_day).withIdentifier(1));
         drawerItems.add(new SecondaryDrawerItem().withName(R.string.drawer_item_change_schedule).withIcon(GoogleMaterial.Icon.gmd_refresh).withIdentifier(2));
         drawerItems.add(new SectionDrawerItem().withName(R.string.drawer_item_section_preferences));
         drawerItems.add(new SecondaryDrawerItem().withName(R.string.drawer_item_about).withIcon(GoogleMaterial.Icon.gmd_info).withIdentifier(3));
@@ -58,10 +58,10 @@ public class MainActivity extends AppCompatActivity implements Drawer.OnDrawerIt
             public void run() {
                 switch (drawerItem.getIdentifier()) {
                     case 0:
-                        getFragmentManager().beginTransaction().replace(R.id.fragment, ScheduleFragment.newInstance(ScheduleFragment.TYPE_THREE_DAY_VIEW)).commit();
+                        getFragmentManager().beginTransaction().replace(R.id.fragment, ScheduleFragment.newInstance(ScheduleFragment.TYPE_DAY_VIEW)).commit();
                         break;
                     case 1:
-                        getFragmentManager().beginTransaction().replace(R.id.fragment, ScheduleFragment.newInstance(ScheduleFragment.TYPE_DAY_VIEW)).commit();
+                        getFragmentManager().beginTransaction().replace(R.id.fragment, ScheduleFragment.newInstance(ScheduleFragment.TYPE_THREE_DAY_VIEW)).commit();
                         break;
                     case 2:
                         getFragmentManager().beginTransaction().replace(R.id.fragment, new ChangeScheduleFragment()).commit();

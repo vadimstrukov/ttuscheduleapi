@@ -7,7 +7,6 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.CursorWrapper;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -21,7 +20,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
@@ -35,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -119,16 +116,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-        String description = null;
-        String location = null;
-        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null, "_id = ?", new String[]{String.valueOf(event.getId())}, null);
-        assert cursor != null;
-        if (cursor.moveToFirst()) {
-            description = cursor.getString(3);
-            location = cursor.getString(4);
-        }
-        cursor.close();
-
+        String description = event.getDescription();
+        String location = event.getLocation();
         AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
         DecimalFormat mFormat = new DecimalFormat("00");
         mFormat.setRoundingMode(RoundingMode.DOWN);
@@ -210,7 +199,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                 Calendar endTime = GregorianCalendar.getInstance();
                 startTime.setTime(new Date(data.getLong(1)));
                 endTime.setTime(new Date(data.getLong(2)));
-                WeekViewEvent event = new WeekViewEvent(data.getInt(0), data.getString(5), startTime, endTime);
+                WeekViewEvent event = new WeekViewEvent(data.getInt(0), data.getString(5), data.getString(3), data.getString(4),  startTime, endTime);
                 event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
                 eventList.add(event);
             }
