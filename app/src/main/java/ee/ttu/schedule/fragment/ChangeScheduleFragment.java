@@ -36,7 +36,7 @@ import ee.ttu.schedule.provider.BaseContract;
 import ee.ttu.schedule.provider.GroupContract;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SearchView.OnQueryTextListener, SyncStatusObserver {
+public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SearchView.OnQueryTextListener, SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener {
     private ListView groupListView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private CursorAdapter groupCursorAdapter;
@@ -66,6 +66,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         groupListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         groupListView.setMultiChoiceModeListener(this);
         groupListView.setOnItemClickListener(this);
+        swipeRefreshLayout.setOnRefreshListener(this);
     }
 
     @Override
@@ -179,7 +180,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void run() {
                 NetworkInfo networkInfo = ((ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-                if(networkInfo == null){
+                if (networkInfo == null) {
                     ContentResolver.cancelSync(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
                     Toast.makeText(getActivity(), getActivity().getString(R.string.err_network), Toast.LENGTH_SHORT).show();
                 }
@@ -188,5 +189,10 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
                 swipeRefreshLayout.setRefreshing(syncActive || syncPending);
             }
         });
+    }
+
+    @Override
+    public void onRefresh() {
+        syncUtils.syncGroups();
     }
 }
