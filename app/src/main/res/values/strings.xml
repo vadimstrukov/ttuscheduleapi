@@ -5,7 +5,7 @@
 
     <string name="drawer_item_view_day">Day</string>
     <string name="drawer_item_view_three_days">3 Days</string>
-    <string name="drawer_item_update_schedule">Update schedule</string>
+    <string name="drawer_item_change_schedule">Add/Change schedule</string>
     <string name="drawer_item_section_preferences">Preferences</string>
     <string name="drawer_item_about">About</string>
 
