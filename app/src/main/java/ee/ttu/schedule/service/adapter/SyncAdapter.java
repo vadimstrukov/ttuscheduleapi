@@ -35,6 +35,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private final String TAG = this.getClass().getSimpleName();
     private static final String URL = "http://test-patla4.rhcloud.com/api/v1";
 
+    private static final int TIMEOUT = 15000;
+
     public static final String SYNC_TYPE = "sync_type";
     public static final int SYNC_GROUPS = 0;
     public static final int SYNC_EVENTS = 1;
@@ -55,13 +57,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             switch (sync_type) {
                 case SYNC_GROUPS:
                     JsonObjectRequest groupsRequest = new JsonObjectRequest(Request.Method.GET, String.format("%1$s/groups", URL), future, future);
-                    groupsRequest.setRetryPolicy(new DefaultRetryPolicy(15000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                    groupsRequest.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                     requestQueue.add(groupsRequest);
                     operations = getGroups(future.get(), provider, syncResult);
 
                     break;
                 case SYNC_EVENTS:
                     JsonObjectRequest eventRequest = new JsonObjectRequest(Request.Method.GET, String.format("%1$s/schedule?group=%2$s", URL, extras.get("group")), future, future);
+                    eventRequest.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                     requestQueue.add(eventRequest);
                     operations = getEvents(future.get(), provider, syncResult);
                     break;
