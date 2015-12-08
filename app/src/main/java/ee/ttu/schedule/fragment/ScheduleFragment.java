@@ -41,6 +41,7 @@ import java.util.TimeZone;
 
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
 import ee.ttu.schedule.provider.EventContract;
+import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.SyncUtils;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor> {
@@ -119,7 +120,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
                 mWeekView.goToHour(8);
                 return true;
             case R.id.action_update:
-                syncUtils.syncEvents(PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString("group", null));
+                syncUtils.syncEvents(PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(Constants.GROUP, null));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
