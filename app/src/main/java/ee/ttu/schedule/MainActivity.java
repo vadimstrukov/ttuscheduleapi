@@ -21,7 +21,7 @@ import ee.ttu.schedule.fragment.ScheduleFragment;
 
 public class MainActivity extends AppCompatActivity implements Drawer.OnDrawerItemClickListener {
 
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

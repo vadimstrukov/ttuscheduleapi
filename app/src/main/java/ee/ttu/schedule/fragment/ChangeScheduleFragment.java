@@ -3,10 +3,13 @@ package ee.ttu.schedule.fragment;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.content.SyncStatusObserver;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.ActionMode;
@@ -22,6 +25,7 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 import com.vadimstrukov.ttuschedule.R;
 
@@ -181,6 +185,11 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                NetworkInfo networkInfo = ((ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+                if(networkInfo == null){
+                    ContentResolver.cancelSync(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
+                    Toast.makeText(getActivity(), getActivity().getString(R.string.err_network), Toast.LENGTH_SHORT).show();
+                }
                 boolean syncActive = ContentResolver.isSyncActive(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
                 boolean syncPending = ContentResolver.isSyncPending(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
                 swipeRefreshLayout.setRefreshing(syncActive || syncPending);

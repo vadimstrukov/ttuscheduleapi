@@ -39,8 +39,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_GROUPS = 0;
     public static final int SYNC_EVENTS = 1;
 
-    public SyncAdapter(Context context, boolean autoInitialize) {
-        super(context, autoInitialize);
+    public SyncAdapter(Context context) {
+        super(context, true);
     }
 
     @Override
