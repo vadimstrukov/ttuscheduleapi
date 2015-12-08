@@ -43,6 +43,8 @@ import java.util.TimeZone;
 
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
 import ee.ttu.schedule.provider.EventContract;
+import ee.ttu.schedule.utils.Constants;
+import ee.ttu.schedule.utils.SyncUtils;
 
 public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -55,6 +57,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     private WeekView mWeekView;
     private String[] colorArray;
+
+    private SyncUtils syncUtils;
 
     public ScheduleFragment() {
 
@@ -158,6 +162,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         }
         return new ArrayList<>();
     }
+
+
 
 
     private DateTimeInterpreter getDateTimeInterpreter(final boolean shortDate) {
