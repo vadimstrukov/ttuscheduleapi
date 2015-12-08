@@ -37,7 +37,7 @@ import ee.ttu.schedule.provider.BaseContract;
 import ee.ttu.schedule.provider.GroupContract;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener, SyncStatusObserver {
+public class ChangeScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener, SearchView.OnQueryTextListener, SyncStatusObserver, SwipeRefreshLayout.OnRefreshListener {
     private ListView groupListView;
     private TextView emptyText;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -166,12 +166,6 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
     }
 
     @Override
-    public void onRefresh() {
-        syncUtils.syncGroups();
-    }
-
-
-    @Override
     public boolean onQueryTextSubmit(String query) {
         return false;
     }
@@ -190,7 +184,7 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
             @Override
             public void run() {
                 NetworkInfo networkInfo = ((ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-                if(networkInfo == null){
+                if (networkInfo == null) {
                     ContentResolver.cancelSync(syncUtils.getAccount(), BaseContract.CONTENT_AUTHORITY);
                     Toast.makeText(getActivity(), getActivity().getString(R.string.err_network), Toast.LENGTH_SHORT).show();
                 }
@@ -199,5 +193,10 @@ public class ChangeScheduleFragment extends Fragment implements LoaderManager.Lo
                 swipeRefreshLayout.setRefreshing(syncActive || syncPending);
             }
         });
+    }
+
+    @Override
+    public void onRefresh() {
+        syncUtils.syncGroups();
     }
 }
