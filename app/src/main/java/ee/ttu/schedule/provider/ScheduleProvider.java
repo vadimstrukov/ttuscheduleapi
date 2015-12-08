@@ -116,12 +116,12 @@ public class ScheduleProvider extends ContentProvider {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            String[] args_event = new String[]{
+            Object[] args_event = new String[]{
                     EventContract.Event.TABLE_NAME, EventContract.EventColumns._ID, EventContract.EventColumns.KEY_DT_START,
                     EventContract.EventColumns.KEY_DT_END, EventContract.EventColumns.KEY_DESCRIPTION, EventContract.EventColumns.KEY_LOCATION,
                     EventContract.EventColumns.KEY_SUMMARY
             };
-            String[] args_group = new String[]{GroupContract.Group.TABLE_NAME, GroupContract.GroupColumns._ID, GroupContract.GroupColumns.KEY_NAME};
+            Object[] args_group = new String[]{GroupContract.Group.TABLE_NAME, GroupContract.GroupColumns._ID, GroupContract.GroupColumns.KEY_NAME};
             String sql_event = String.format("CREATE TABLE %1$s (%2$s INTEGER PRIMARY KEY, %3$s INTEGER, %4$s INTEGER, %5$s TEXT, %6$s TEXT, %7$s TEXT)", args_event);
             String sql_group = String.format("CREATE TABLE %1$s (%2$s INTEGER PRIMARY KEY, %3$s TEXT)", args_group);
             db.execSQL(sql_event);

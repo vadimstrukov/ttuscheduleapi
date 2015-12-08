@@ -1,9 +1,13 @@
 package ee.ttu.schedule.fragment;
 
 import android.app.Fragment;
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Loader;
 import android.database.Cursor;
+import android.database.CursorWrapper;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -17,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 
 import com.alamkanak.weekview.DateTimeInterpreter;
 import com.alamkanak.weekview.WeekView;
@@ -26,6 +31,7 @@ import com.vadimstrukov.ttuschedule.R;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -38,19 +44,39 @@ import java.util.TimeZone;
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
 import ee.ttu.schedule.provider.EventContract;
 
-public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener {
+public class ScheduleFragment extends Fragment implements WeekView.MonthChangeListener, WeekView.EventClickListener, WeekView.EventLongPressListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    private String[] colorArray;
-    private static final int TYPE_DAY_VIEW = 1;
-    private static final int TYPE_THREE_DAY_VIEW = 2;
-    private int mWeekViewType = TYPE_THREE_DAY_VIEW;
+    public static final int TYPE_DAY_VIEW = 1;
+    public static final int TYPE_THREE_DAY_VIEW = 2;
+    private static final String ARG_TYPE = "arg_type";
+    private int WEEK_TYPE;
+
+    private List<WeekViewEvent> eventList;
+
     private WeekView mWeekView;
+    private String[] colorArray;
+
+    public ScheduleFragment() {
+
+    }
+
+    public static ScheduleFragment newInstance(int type) {
+        Bundle args = new Bundle();
+        ScheduleFragment scheduleFragment = new ScheduleFragment();
+        args.putInt(ARG_TYPE, type);
+        scheduleFragment.setArguments(args);
+        return scheduleFragment;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         colorArray = getResources().getStringArray(R.array.colors);
+        eventList = new ArrayList<>();
+        if (getArguments() != null)
+            WEEK_TYPE = getArguments().getInt(ARG_TYPE, TYPE_THREE_DAY_VIEW);
+        setHasOptionsMenu(true);
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -60,8 +86,19 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         mWeekView.setOnEventClickListener(this);
         mWeekView.setMonthChangeListener(this);
         mWeekView.setEventLongPressListener(this);
+        mWeekView.setColumnGap((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
+        mWeekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+        mWeekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+        mWeekView.setDateTimeInterpreter(getDateTimeInterpreter(WEEK_TYPE == TYPE_THREE_DAY_VIEW));
         mWeekView.goToHour(8);
-        setupDateTimeInterpreter(false);
+        switch (WEEK_TYPE) {
+            case TYPE_DAY_VIEW:
+                mWeekView.setNumberOfVisibleDays(1);
+                break;
+            case TYPE_THREE_DAY_VIEW:
+                mWeekView.setNumberOfVisibleDays(3);
+                break;
+        }
         return rootView;
     }
 
@@ -75,38 +112,8 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        setupDateTimeInterpreter(id == R.id.action_three_day_view);
-        switch (id) {
-            case R.id.action_today:
-                mWeekView.goToToday();
-                mWeekView.goToHour(8);
-                return true;
-            case R.id.action_day_view:
-                if (mWeekViewType != TYPE_DAY_VIEW) {
-                    item.setChecked(!item.isChecked());
-                    mWeekViewType = TYPE_DAY_VIEW;
-                    mWeekView.setNumberOfVisibleDays(1);
-                    // Lets change some dimensions to best fit the view.
-                    mWeekView.setColumnGap((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
-                    mWeekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
-                    mWeekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
-                    mWeekView.goToHour(8);
-                }
-                return true;
-            case R.id.action_three_day_view:
-                if (mWeekViewType != TYPE_THREE_DAY_VIEW) {
-                    item.setChecked(!item.isChecked());
-                    mWeekViewType = TYPE_THREE_DAY_VIEW;
-                    mWeekView.setNumberOfVisibleDays(3);
-                    // Lets change some dimensions to best fit the view.
-                    mWeekView.setColumnGap((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics()));
-                    mWeekView.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
-                    mWeekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
-                    mWeekView.goToHour(8);
-                }
-                return true;
-        }
+        mWeekView.goToToday();
+        mWeekView.goToHour(8);
         return super.onOptionsItemSelected(item);
     }
 
@@ -116,7 +123,7 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         String location = null;
         Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null, "_id = ?", new String[]{String.valueOf(event.getId())}, null);
         assert cursor != null;
-        if(cursor.moveToFirst()){
+        if (cursor.moveToFirst()) {
             description = cursor.getString(3);
             location = cursor.getString(4);
         }
@@ -145,30 +152,15 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
 
     @Override
     public List<WeekViewEvent> onMonthChange(int newYear, int newMonth) {
-        List<WeekViewEvent> events = new LinkedList<>();
-        Cursor cursor = getActivity().getContentResolver().query(EventContract.Event.CONTENT_URI, null, null, null, null);
-        assert cursor != null;
-        if(newMonth == Calendar.getInstance().get(Calendar.MONTH)) {
-            if (cursor.moveToFirst()) {
-                do {
-                    Calendar startTime = GregorianCalendar.getInstance();
-                    Calendar endTime = GregorianCalendar.getInstance();
-                    startTime.setTime(new Date(cursor.getLong(1)));
-                    endTime.setTime(new Date(cursor.getLong(2)));
-                    WeekViewEvent event = new WeekViewEvent(cursor.getInt(0), cursor.getString(5), startTime, endTime);
-                    event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
-                    events.add(event);
-                }
-                while (cursor.moveToNext());
-            }
+        if (newMonth == Calendar.getInstance().get(Calendar.MONTH)) {
+            return eventList;
         }
-        cursor.close();
-        return events;
+        return new ArrayList<>();
     }
 
 
-    private void setupDateTimeInterpreter(final boolean shortDate) {
-        mWeekView.setDateTimeInterpreter(new DateTimeInterpreter() {
+    private DateTimeInterpreter getDateTimeInterpreter(final boolean shortDate) {
+        return new DateTimeInterpreter() {
             @Override
             public String interpretDate(Calendar date) {
                 SimpleDateFormat weekdayNameFormat = new SimpleDateFormat("EEE", Locale.getDefault());
@@ -184,15 +176,16 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
             public String interpretTime(int hour) {
                 return hour + ":00";
             }
-        });
+        };
     }
+
 
     private void setTodayIcon(LayerDrawable icon, Context context, String timezone) {
         DayOfMonthDrawable today;
         // Reuse current drawable if possible
         Drawable currentDrawable = icon.findDrawableByLayerId(R.id.today_icon_day);
         if (currentDrawable != null && currentDrawable instanceof DayOfMonthDrawable) {
-            today = (DayOfMonthDrawable)currentDrawable;
+            today = (DayOfMonthDrawable) currentDrawable;
         } else {
             today = new DayOfMonthDrawable(context);
         }
@@ -201,5 +194,33 @@ public class ScheduleFragment extends Fragment implements WeekView.MonthChangeLi
         today.setDayOfMonth(calendar.get(Calendar.DAY_OF_MONTH));
         icon.mutate();
         icon.setDrawableByLayerId(R.id.today_icon_day, today);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(), EventContract.Event.CONTENT_URI, null, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        eventList.clear();
+        if (data.moveToFirst()) {
+            do {
+                Calendar startTime = GregorianCalendar.getInstance();
+                Calendar endTime = GregorianCalendar.getInstance();
+                startTime.setTime(new Date(data.getLong(1)));
+                endTime.setTime(new Date(data.getLong(2)));
+                WeekViewEvent event = new WeekViewEvent(data.getInt(0), data.getString(5), startTime, endTime);
+                event.setColor(Color.parseColor(colorArray[new Random().nextInt(colorArray.length)]));
+                eventList.add(event);
+            }
+            while (data.moveToNext());
+        }
+        mWeekView.notifyDatasetChanged();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

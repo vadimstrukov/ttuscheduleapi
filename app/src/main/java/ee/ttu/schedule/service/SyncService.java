@@ -22,7 +22,7 @@ public class SyncService extends Service {
         Log.d(TAG, "Service created");
         synchronized (syncAdapterLock){
             if(syncAdapter == null)
-                syncAdapter = new SyncAdapter(this, true);
+                syncAdapter = new SyncAdapter(this);
         }
     }
 

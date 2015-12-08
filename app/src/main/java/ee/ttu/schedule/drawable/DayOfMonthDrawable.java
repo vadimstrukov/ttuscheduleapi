@@ -16,9 +16,9 @@ public class DayOfMonthDrawable extends Drawable {
     private String dayOfMonth = "1";
     private final Paint paint;
     private final Rect textBounds = new Rect();
-    private static float textSize = 14;
+
     public DayOfMonthDrawable(Context context) {
-        textSize = context.getResources().getDimension(R.dimen.today_icon_text_size);
+        float textSize = context.getResources().getDimension(R.dimen.today_icon_text_size);
         paint = new Paint();
         paint.setAlpha(255);
         paint.setColor(ContextCompat.getColor(context, android.R.color.white));
