@@ -9,13 +9,4 @@
         android:icon="@drawable/today_icon"
         app:showAsAction="ifRoom"
         android:orderInCategory="1" />
-    <group android:checkableBehavior="single">
-        <item android:id="@+id/action_day_view"
-            android:title="@string/action_day_view"
-            android:orderInCategory="100" />
-        <item android:id="@+id/action_three_day_view"
-            android:title="@string/action_three_day_view"
-            android:orderInCategory="100"
-            android:checked="true"/>
-    </group>
 </menu>
