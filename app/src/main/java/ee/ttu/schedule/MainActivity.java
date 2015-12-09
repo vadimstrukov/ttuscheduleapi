@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements Drawer.OnDrawerIt
                     case 3:
                         getFragmentManager().beginTransaction().replace(R.id.fragment, new AboutFragment()).commit();
                         break;
+
                 }
             }
         });
