@@ -11,6 +11,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import ee.ttu.schedule.calendar.CalendarController;
+import ee.ttu.schedule.calendar.DayFragment;
 import ee.ttu.schedule.calendar.DayView;
 import ee.ttu.schedule.calendar.EventLoader;
 import ee.ttu.schedule.drawable.DayOfMonthDrawable;
@@ -34,7 +36,7 @@ import ee.ttu.schedule.provider.BaseContract;
 import ee.ttu.schedule.utils.Constants;
 import ee.ttu.schedule.utils.SyncUtils;
 
-public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, SyncStatusObserver, ViewSwitcher.ViewFactory {
+public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, SyncStatusObserver {
 
     private static final String ARG_TYPE = "arg_type";
     public static final int TYPE_DAY_VIEW = 1;
@@ -44,8 +46,7 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
     private SwipeRefreshLayout swipeRefreshLayout;
     private Object syncObserverHandle;
 
-    private ViewSwitcher viewSwitcher;
-    private EventLoader eventLoader;
+    private DayFragment dayFragment;
 
     private SyncUtils syncUtils;
 
@@ -64,7 +65,6 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        eventLoader = new EventLoader(getActivity());
         syncUtils = new SyncUtils(getActivity());
         if (getArguments() != null) {
             switch (getArguments().getInt(ARG_TYPE, TYPE_THREE_DAY_VIEW)) {
@@ -77,6 +77,8 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
             }
         }
         setHasOptionsMenu(true);
+        dayFragment = DayFragment.newInstance(GregorianCalendar.getInstance(), days);
+        getFragmentManager().beginTransaction().add(R.id.FragmentContainer, dayFragment).commit();
     }
 
     @Override
@@ -84,9 +86,6 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
         View rootView = inflater.inflate(R.layout.fragment_schedule, container, false);
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setEnabled(false);
-        viewSwitcher = (ViewSwitcher) rootView.findViewById(R.id.viewSwitcher);
-        viewSwitcher.setFactory(this);
-        viewSwitcher.getCurrentView().requestFocus();
         return rootView;
     }
 
@@ -96,7 +95,6 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
         onStatusChanged(0);
         final int mask = ContentResolver.SYNC_OBSERVER_TYPE_PENDING | ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE;
         syncObserverHandle = ContentResolver.addStatusChangeListener(mask, this);
-        eventLoader.startBackgroundThread();
     }
 
     @Override
@@ -106,7 +104,6 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
             ContentResolver.removeStatusChangeListener(syncObserverHandle);
             syncObserverHandle = null;
         }
-        eventLoader.stopBackgroundThread();
     }
 
     @Override
@@ -121,6 +118,11 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_today:
+                final CalendarController.EventInfo eventInfo = new CalendarController.EventInfo();
+                eventInfo.eventType = CalendarController.EventType.GO_TO;
+                eventInfo.selectedTime = new Time();
+                eventInfo.selectedTime.set(GregorianCalendar.getInstance().getTimeInMillis());
+                dayFragment.handleEvent(eventInfo);
                 return true;
             case R.id.action_update:
                 syncUtils.syncEvents(PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext()).getString(Constants.GROUP, null));
@@ -129,50 +131,6 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
                 return super.onOptionsItemSelected(item);
         }
     }
-
-//    @Override
-//    public void onEventClick(WeekViewEvent event, RectF eventRect) {
-//        String description = event.getDescription();
-//        String location = event.getLocation();
-//        AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
-//        DecimalFormat mFormat = new DecimalFormat("00");
-//        mFormat.setRoundingMode(RoundingMode.DOWN);
-//        alertDialog.setTitle(event.getName());
-//        String dateStart = mFormat.format((double) event.getStartTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getStartTime().get(Calendar.MINUTE));
-//        String dateEnd = mFormat.format((double) event.getEndTime().get(Calendar.HOUR_OF_DAY)) + ":" + mFormat.format((double) event.getEndTime().get(Calendar.MINUTE));
-//        alertDialog.setMessage(dateStart + "--" + dateEnd + "\n" + description + "\n" + location);
-//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.dismiss();
-//                    }
-//                });
-//        alertDialog.show();
-//    }
-
-
-//
-//
-//    private DateTimeInterpreter getDateTimeInterpreter(final boolean shortDate) {
-//        return new DateTimeInterpreter() {
-//            @Override
-//            public String interpretDate(Calendar date) {
-//                SimpleDateFormat weekdayNameFormat = new SimpleDateFormat("EEE", Locale.getDefault());
-//                String weekday = weekdayNameFormat.format(date.getTime());
-//                SimpleDateFormat format = new SimpleDateFormat(" M/d", Locale.getDefault());
-//
-//                if (shortDate)
-//                    weekday = String.valueOf(weekday.charAt(0));
-//                return weekday.toUpperCase() + format.format(date.getTime());
-//            }
-//
-//            @Override
-//            public String interpretTime(int hour) {
-//                return hour + ":00";
-//            }
-//        };
-//    }
-
 
     private void setTodayIcon(LayerDrawable icon, Context context, String timezone) {
         DayOfMonthDrawable today;
@@ -210,20 +168,5 @@ public class ScheduleFragment extends Fragment implements SwipeRefreshLayout.OnR
                 swipeRefreshLayout.setRefreshing(syncActive || syncPending);
             }
         });
-    }
-
-    /**
-     * Creates a new {@link View} to be added in a
-     * {@link ViewSwitcher}.
-     *
-     * @return a {@link View}
-     */
-    @Override
-    public View makeView() {
-        DayView view = new DayView(getActivity(), CalendarController.getInstance(getActivity()), viewSwitcher, eventLoader, days);
-        view.setLayoutParams(new ViewSwitcher.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        view.setSelected(GregorianCalendar.getInstance(), false, false);
-        return view;
     }
 }

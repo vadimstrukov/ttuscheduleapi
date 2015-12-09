@@ -33,4 +33,7 @@
         <!-- additional events message for multiple events [CHAR LIMIT = 10] -->
         <item quantity="other">+<xliff:g id="number">%d</xliff:g></item>
     </plurals>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

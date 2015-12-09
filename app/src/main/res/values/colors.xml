@@ -35,6 +35,7 @@
     <color name="month_event_other_color">#FF666666</color>
     <color name="calendar_grid_line_highlight_color">#ff707070</color>
     <color name="new_event_hint_text_color">#FFFFFFFF</color>
+    <color name="day_past_background_color">#FFDDDDDD</color>
 
 
 </resources>
